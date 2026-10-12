@@ -66,12 +66,30 @@ node tests/smoke.cjs
 
 Sur une autre machine, Playwright et Chromium doivent être installés séparément pour exécuter ces tests. Vous pouvez aussi utiliser les vérifications manuelles ci-dessus sans rien installer. `ECOSCAN_TEST_URL` permet de cibler une autre URL, y compris un chemin `/EcoScan`.
 
-## Station EcoScan et nouvelle simulation
+## ÉcoNova : la poubelle automatique EcoScan
 
-Le site présente désormais une station modulaire à trois compartiments (PET, aluminium et papier) dessinée en CSS. C’est un design de concept, pas un plan de fabrication ni un équipement installé. La section « Comment ça fonctionnerait » explique l’orientation des objets, la collecte séparée, les niveaux de remplissage et le fonctionnement hors ligne. Une FAQ et une liste des conditions d’un pilote complètent la présentation.
+ÉcoNova est le nom proposé pour la poubelle, avec la signature « Le tri entre dans une nouvelle ère ». EcoScan reste le nom du projet et de l’app envisagée. Il s’agit d’une proposition de nom, sans recherche juridique de disponibilité.
 
-La démo suit trois étapes : sélectionner un objet, cliquer sur « Simuler la lecture », puis choisir un compartiment. Un choix incorrect affiche une explication sans points. Pour le gobelet et l’emballage alimentaire, la réponse attendue est « Vérifier la consigne » car leur composition est incertaine. Une bonne réponse débloque la validation de 10 points fictifs, une seule fois par parcours ; « Recommencer un geste » permet un nouvel essai. Ces points ne prouvent aucune action réelle.
+Le concept présente UNE ouverture pour l’utilisateur. À l’intérieur : séparation des objets, zone de reconnaissance, aiguillage vers des compartiments distincts et contrôle isolé pour les objets incertains. L’utilisateur n’a pas à choisir un bac. Les matières acceptées et la capacité à séparer un mélange doivent être définies et testées ; les sacs fermés et déchets dangereux ne sont pas supposés pris en charge.
 
-Le curseur de remplissage et la case « connexion coupée » ne pilotent aucun matériel. Le seuil de 85 % est choisi uniquement pour illustrer la démo. Tous les compteurs de station sont fictifs et aucune alerte n’est envoyée. Pour changer ces scénarios, modifiez `updateStation()` dans `script.js`. Pour adapter le design, modifiez les classes `.station-*` et `.physical-bin` dans `styles.css`.
+Le parcours envisagé est : scan du QR de la station dans l’app → session identifiée → dépôt → reconnaissance et tri mécanique → confirmation → points sur le portefeuille → fin de session. La cible de 5 ms concerne une ambition de reconnaissance non démontrée, jamais le temps total de tri ou d’envoi des points.
 
-Les mentions publiques du projet sont attribuées à Albin Krasniqi. Le brief d’origine dans `docs/BRIEF_SOURCE.md` reste conservé comme document historique de référence, sans servir de liste actuelle de fondateurs.
+### Blueprint
+
+- `assets/econova-concept.png` : illustration générée du concept en coupe, avec annotations et téléphone ; pas un plan certifié.
+- `assets/econova-blueprint.svg` : schéma vectoriel des étapes et du flux, modifiable et téléchargeable depuis le site.
+- Aucun dimensionnement, coût, débit, précision ou performance matérielle n’est validé. La vue en coupe rend les bacs visibles pour expliquer l’intérieur ; ils ne sont pas des ouvertures utilisateur.
+
+### Simulation web
+
+Cliquez « Simuler la connexion à ECO-001 », choisissez un objet pour alimenter le scénario, puis « Déposer dans l’ouverture unique ». Pour PET, canette et papier, la démo sélectionne automatiquement la destination et crédite 10 points fictifs une seule fois par dépôt. Le scénario de dépôt mélangé montre trois objets séparés et routés en une seule action, avec 30 points fictifs. Pour un gobelet ou emballage incertain, elle montre le contrôle requis sans créditer de points.
+
+« Préparer un nouveau dépôt » recommence un parcours. « Terminer la session simulée » déconnecte le téléphone de démonstration. Le rechargement ferme toujours la session mais conserve le solde local si le navigateur autorise le stockage. Une station pleine ou hors ligne bloque les nouveaux dépôts dans cette démo. Les objets déjà traités ne sont jamais recrédités en changeant ces options.
+
+« Simuler un échange » retire 20 points uniquement si le solde suffit. Aucun cadeau, coupon, avantage réel ou partenariat n’est créé. Le compteur reste local au navigateur : pas de vraie connexion entre appareils, QR, compte, API, paiement ou app mobile.
+
+La connexion réelle d’une poubelle à une app demanderait du matériel, des capteurs et moteurs, des essais de sécurité, un protocole authentifié, une validation des dépôts, une gestion des événements sans double crédit et un portefeuille côté serveur. Ce site gratuit reste une démonstration statique du concept.
+
+Pour adapter les scénarios, modifier `updateAvailability()`, les données `items`, le traitement du bouton `scan` et `updateStation()` dans `script.js`. Le seuil de 85 % est un choix de démo. Pour le design, modifier les classes `.machine-*`, `.internal-bins`, `.phone-demo` et `.route-*` dans `styles.css`.
+
+Les mentions publiques du projet sont attribuées à Albin Krasniqi. Le brief d’origine dans `docs/BRIEF_SOURCE.md` reste un document historique ; cette évolution vers le tri automatique suit la nouvelle demande du porteur du projet.
