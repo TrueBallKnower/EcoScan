@@ -128,3 +128,15 @@ Pour changer l’adresse du QR, modifier `URL` dans `tools/generate_qr.py` et r�
 La simulation propose maintenant une entrée guidée avec un seul bouton qui reflète l’état partagé de la station. Le calculateur de faisabilité compare des hypothèses de flux et de cycle complet ; sa formule et ses limites sont visibles. Ses chiffres ne sont jamais des performances mesurées ni des économies de CO₂.
 
 Vérification supplémentaire : `node tests/vision.cjs`, avec `ECOSCAN_TEST_URL` pour choisir l’adresse du serveur comme pour les autres suites. Les tests de navigateur vérifient le parcours guidé, les hypothèses de capacité et l’arrivée par l’URL QR.
+
+## Film explicatif et animations
+
+La section `#video-explicative` héberge un vrai MP4 H.264 de 1 min 48 (1280 × 720), créé pour le concept ÉcoNova. Neuf chapitres expliquent session QR, dépôt, séparation, scan, aiguillage, contrôle, points et collecte. Le film est animé, sans voix off, avec textes intégrés et sous-titres français optionnels. `docs/VIDEO_TRANSCRIPTION.md` conserve la transcription complète ; une version lisible est également disponible directement sous le lecteur.
+
+La vidéo ne démarre pas automatiquement, utilise `preload="none"` et s’affiche avec une image d’attente. Choisir un chapitre charge les métadonnées et positionne le lecteur sans lancer la lecture. Les contrôles natifs permettent pause, plein écran et réglages selon le navigateur. Aucun hébergement vidéo payant ni lecteur tiers.
+
+Pour modifier le film, adapter `SCENES` dans `tools/render_explainer.py`, puis exécuter ce générateur hors ligne avec Python/Pillow et ffmpeg. Le site et GitHub Pages n’ont besoin d’aucun de ces outils : les fichiers MP4/JPEG/VTT préproduits sont conservés dans `assets/`. Le film utilise des schémas originaux ; il ne documente pas une machine fabriquée et ne mesure aucune performance.
+
+Les apparitions au scroll, les cartes décalées et les interactions des boutons respectent `prefers-reduced-motion`. Le contenu principal reste visible sans JavaScript, et la lecture vidéo reste manuelle même quand les animations sont activées. La progression de lecture est décorative et ne collecte aucune donnée.
+
+Vérification : `node tests/media.cjs` (même configuration Playwright/Chromium et `ECOSCAN_TEST_URL` que les autres suites). La suite vérifie lecture réelle, durée, recherche des chapitres, sous-titres, téléchargements, absence d’autoplay et affichage responsive.

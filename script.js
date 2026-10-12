@@ -202,9 +202,15 @@ document.querySelectorAll('.pledge').forEach(button => button.addEventListener('
   const count = document.querySelectorAll('.pledge[aria-pressed="true"]').length;
   $('pledge-status').textContent = count ? `${count} geste${count>1?'s':''} choisi${count>1?'s':''} pour cette visite. Aucun engagement n’est transmis ni enregistré.` : 'Vous pouvez choisir un autre geste à essayer.';
 }));
-if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const observer = new IntersectionObserver(entries => entries.forEach(entry => {if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}),{threshold:.08});
-  document.querySelectorAll('.section>h2,.section>.grid,.campus-art').forEach(el => {el.classList.add('reveal-ready');observer.observe(el);});
+// Progressive, staggered entrance; content remains visible without JavaScript.
+if('IntersectionObserver' in window && !reducedMotion()) {
+  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
+    if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}
+  }),{threshold:.08});
+  document.querySelectorAll('.section>h2,.section>.lead,.section>.grid,.campus-art,.future-grid,.architecture-chain,.readiness-grid,.qr-poster,.feasibility-lab,.demo-intro,.video-frame').forEach(el=>{
+    if(el.matches('.grid,.future-grid,.architecture-chain,.readiness-grid')) [...el.children].forEach((card,i)=>{card.classList.add('sequence-card');card.style.setProperty('--entrance-delay',`${Math.min(i,4)*85}ms`);});
+    el.classList.add('reveal-ready');observer.observe(el);
+  });
 }
 
 function updateStation() {
@@ -257,3 +263,28 @@ function updateCapacity() {
   $('capacity-status').textContent=arrival>capacity?`Dans ce scénario fictif, ${arrival} objets/min dépasse la capacité calculée. Une file pourrait se former ; au moins ${Math.ceil(arrival/capacity)} stations seraient nécessaires dans ce modèle simplifié, avant prise en compte des pics et contraintes réelles.`:`Dans ce scénario fictif, le flux moyen reste sous la capacité calculée. Cela ne garantit pas l’absence de file : variabilité, maintenance et mélanges ne sont pas modélisés.`;
 }
 ['arrival-rate','cycle-time','availability'].forEach(id=>$(id).addEventListener('input',updateCapacity));updateCapacity();updateGuide();
+
+// Manual video playback and chapter seeking; never auto-play on scroll.
+const explainer=$('explainer-video');
+let pendingVideoTime=null;
+function seekChapter() {
+  if(pendingVideoTime===null || explainer.readyState<1)return;
+  explainer.currentTime=Math.min(pendingVideoTime,Math.max(0,explainer.duration-.1));pendingVideoTime=null;
+  $('video-status').textContent='Chapitre sélectionné. Appuyez sur lecture pour regarder le film.';
+}
+explainer.addEventListener('loadedmetadata',seekChapter);
+document.querySelectorAll('[data-video-time]').forEach(button=>button.addEventListener('click',()=>{
+  pendingVideoTime=Number(button.dataset.videoTime);
+  document.querySelectorAll('[data-video-time]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  $('video-status').textContent='Chargement du chapitre…';
+  if(explainer.readyState<1){explainer.preload='metadata';explainer.load();}else seekChapter();
+}));
+explainer.addEventListener('error',()=>{$('video-status').textContent='La lecture est indisponible. Téléchargez la vidéo ou consultez la transcription.';});
+let scrollScheduled=false;
+function updateReadingProgress() {
+  scrollScheduled=false;
+  const total=document.documentElement.scrollHeight-innerHeight;
+  $('reading-progress').style.transform=`scaleX(${total>0?Math.min(1,Math.max(0,scrollY/total)):0})`;
+}
+addEventListener('scroll',()=>{if(!scrollScheduled){scrollScheduled=true;requestAnimationFrame(updateReadingProgress);}},{passive:true});
+addEventListener('resize',updateReadingProgress);updateReadingProgress();
