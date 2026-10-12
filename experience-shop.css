@@ -65,13 +65,13 @@
 .eco-shop-filters button { min-height:44px; padding:11px 18px; background:#f6f9f0; border:1px solid #bdcfb4; border-radius:24px; color:#35603b; font:inherit; font-size:.81rem; cursor:pointer; }
 .eco-shop-filters button[aria-pressed=true] { color:#edf7e8; background:#0c5b47; border-color:#0c5b47; }
 .eco-shop-filter-status { font-size:.72rem; min-height:1.5em; margin:0 0 16px; color:#637c57; }
-.eco-shop-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:21px; margin:20px 0 30px; }
+.eco-shop-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin:20px 0 30px; }
 .eco-shop-product { border:1px solid #cbd9c0; border-radius:20px; overflow:hidden; background:#fff; display:flex; flex-direction:column; padding:0; }
 .eco-shop-product[hidden] { display:none; }
-.eco-shop-art { padding:22px; display:grid; place-items:center; aspect-ratio:1.18; background:radial-gradient(ellipse at center,#f7faf0,#e5eedb); }
-.eco-shop-art svg { display:block; width:100%; height:auto; max-width:230px; overflow:visible; }
-.eco-shop-product:hover .eco-shop-art svg { transform:translateY(-3px); }
-.eco-shop-art svg { transition:transform .25s ease; }
+.eco-shop-art { position:relative; padding:0; overflow:hidden; aspect-ratio:1; background:#efede5; }
+.eco-shop-art img { display:block; width:100%; height:100%; object-fit:contain; transition:transform .3s ease; }
+.eco-shop-product:hover .eco-shop-art img { transform:scale(1.025); }
+.eco-shop-image-caption { position:absolute; bottom:12px; left:14px; padding:4px 8px; border-radius:6px; background:#fffdf6e8; color:#5b6656; font-size:.58rem; letter-spacing:.03em; }
 .eco-shop-product-copy { padding:23px; display:flex; flex-direction:column; flex-grow:1; }
 .eco-shop-product-copy>.eyebrow { color:#597e47; letter-spacing:.08em; font-size:.56rem; margin-bottom:12px; }
 .eco-shop-product-copy h3 { font-size:1.22rem; letter-spacing:-.035em; margin:0 0 11px; line-height:1.3; }
@@ -99,13 +99,15 @@
 .eco-shop-success { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#daeccf; color:#165e3d; font-size:1.35rem; }
 .eco-app-section button:focus-visible,.eco-app-section a:focus-visible,.eco-shop-section button:focus-visible,.eco-shop-section a:focus-visible,.eco-shop-dialog button:focus-visible { outline:3px solid #b97728; outline-offset:4px; }
 @keyframes eco-app-panel-enter { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
-@media(max-width:1100px) { .eco-app-layout{gap:40px} .eco-shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media(max-width:1100px) { .eco-app-layout{gap:40px} }
 @media(max-width:700px) {
   .eco-app-layout{grid-template-columns:1fr;gap:30px}.eco-app-phone{grid-row:1;max-width:425px;padding:25px 18px 18px;border-radius:33px}
-  .eco-app-story{max-width:none}.eco-shop-intro{display:block}.eco-shop-wallet{min-width:0;max-width:350px;margin:25px 0}
-  .eco-shop-grid{gap:12px}.eco-shop-product-copy{padding:18px 15px}.eco-shop-product-copy h3{font-size:1.06rem}.eco-shop-product-copy p{font-size:.76rem}
-  .eco-shop-art{padding:13px}.eco-shop-priority{padding:23px 20px;gap:15px}.eco-shop-filters{gap:7px}.eco-shop-filters button{font-size:.75rem;padding:11px 15px}
+  .eco-app-story{max-width:none}.eco-shop-intro{display:block}.eco-shop-wallet{min-width:0;max-width:none;margin:22px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 14px;padding:17px 20px}
+  .eco-shop-wallet>small { grid-column:1; }
+  .eco-shop-wallet>strong { grid-column:2; grid-row:1/3; margin:0; font-size:clamp(1.3rem,6vw,1.7rem); }
+  .eco-shop-wallet>a { grid-column:1; font-size:.73rem; }
+  .eco-shop-grid{grid-template-columns:1fr;max-width:480px;margin-inline:auto;gap:24px}.eco-shop-product-copy{padding:24px}.eco-shop-product-copy h3{font-size:1.3rem}.eco-shop-product-copy p{font-size:.9rem}
+  .eco-shop-priority{padding:23px 20px;gap:15px}.eco-shop-filters{gap:7px}.eco-shop-filters button{font-size:.75rem;padding:11px 15px}
   .eco-shop-dialog-content{padding:26px 23px}.eco-shop-dialog h3{font-size:1.7rem}.eco-shop-dialog-actions{flex-direction:column}
 }
-@media(max-width:380px) { .eco-shop-grid{grid-template-columns:1fr}.eco-shop-art{aspect-ratio:1.6} }
-@media(prefers-reduced-motion:reduce) { .eco-app-panel{animation:none}.eco-shop-art svg{transition:none}.eco-shop-product:hover .eco-shop-art svg{transform:none} }
+@media(prefers-reduced-motion:reduce) { .eco-app-panel{animation:none}.eco-shop-art img{transition:none}.eco-shop-product:hover .eco-shop-art img{transform:none} }

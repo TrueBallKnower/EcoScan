@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const base=process.env.ECOSCAN_TEST_URL||'http://127.0.0.1:8011/EcoScan';
+const base=process.env.ECOSCAN_TEST_URL||'http://127.0.0.1:8012/EcoScan';
 const output=process.env.ECOSCAN_SCREENSHOT_DIR||'/tmp/ecoscan-shop';
 async function open(page,id){await page.evaluate(value=>{location.hash=value;},id);await page.locator('#'+id).waitFor({state:'visible'});await page.waitForTimeout(250);}
 async function deposit(page){await page.click('#scan');await page.waitForFunction(()=>document.getElementById('drop-zone').dataset.state==='confirmed');}
@@ -27,6 +27,19 @@ const balance=page=>page.locator('#points').textContent();
     assert.equal(await balance(page),'30');assert.equal(await page.locator('#eco-app-balance').textContent(),'30');
     assert.equal(await page.locator('#eco-shop-balance').textContent(),'30');
     await open(page,'boutique');
+    assert.equal(await page.locator('[data-shop-product]').count(),3);
+    assert.equal(await page.locator('[data-shop-product="repair-kit"], [data-shop-detail="repair-kit"], [data-shop-filter="repair"]').count(),0);
+    const packshots=await page.locator('.eco-shop-art img').all();assert.equal(packshots.length,3);
+    for(const image of packshots){
+      await image.scrollIntoViewIfNeeded();await image.evaluate(element=>element.decode());
+      const asset=await image.evaluate(element=>({source:element.getAttribute('src'),current:element.currentSrc,width:element.naturalWidth,height:element.naturalHeight}));
+      assert.ok(asset.width>600&&asset.height>600,`packshot dimensions ${asset.width}×${asset.height}`);
+      assert.equal(new URL(asset.current).origin,new URL(page.url()).origin,'packshot comes from the same site');
+      assert.match(new URL(asset.current).pathname,/\/assets\/[^/]+\.(?:webp|png|jpe?g)$/i);
+      const published=new URL(asset.source,'https://trueballknower.github.io/EcoScan/');
+      assert.equal(published.protocol,'https:');assert.equal(published.origin,'https://trueballknower.github.io');assert.ok(published.pathname.startsWith('/EcoScan/assets/'));
+    }
+    await page.click('[data-shop-filter="daily"]');assert.equal(await page.locator('[data-shop-product]:visible').count(),1);assert.equal(await page.locator('[data-shop-product="loop-notebook"]').isVisible(),true);
     await page.click('[data-shop-filter="reuse"]');
     assert.equal(await page.locator('[data-shop-product]:visible').count(),2);
     assert.match(await page.locator('#eco-shop-filter-status').textContent(),/2 concepts/);
@@ -61,6 +74,10 @@ const balance=page=>page.locator('#points').textContent();
     assert.equal(await balance(page),'10','caller cannot set a product price');
     await page.evaluate(()=>document.dispatchEvent(new CustomEvent('ecoscan:exchange-request',{detail:{id:'test-unknown-product',productId:'unknown',cost:0}})));
     assert.equal(await balance(page),'10');
+    await page.evaluate(()=>document.dispatchEvent(new CustomEvent('ecoscan:exchange-request',{detail:{id:'test-removed-product',productId:'repair-kit',cost:60}})));
+    assert.equal(await balance(page),'10','the removed product never debits the shared wallet');
+    assert.equal(await page.evaluate(()=>window.shopResults.at(-1).ok),false,'the removed product is refused');
+    assert.match(await page.evaluate(()=>window.shopResults.at(-1).message),/non reconnu/,'the removed product is unknown, rather than merely unaffordable');
     for(const productId of ['__proto__','toString']){
       await page.evaluate(productId=>document.dispatchEvent(new CustomEvent('ecoscan:exchange-request',{detail:{id:'test-inherited-'+productId,productId}})),productId);
       assert.equal(await balance(page),'10','inherited properties are not catalogue products');
@@ -130,10 +147,10 @@ const balance=page=>page.locator('#points').textContent();
     await mobile.locator('#app').screenshot({path:output+'/app-mobile.png'});
 
     const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:360,height:850}});
-    await nojs.goto(base+'#boutique');assert.equal(await nojs.locator('[data-shop-product]:visible').count(),4);
+    await nojs.goto(base+'#boutique');assert.equal(await nojs.locator('[data-shop-product]:visible').count(),3);
     assert.equal(await nojs.locator('[data-shop-detail]:visible').count(),0);
     assert.equal(await nojs.locator('#app noscript').isVisible(),true);
     assert.ok(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-    console.log('PASS shop/app: one shared session/wallet, real deposit and exchange updates, filters, cancellation, insufficient/busy/unknown/mismatched cost, idempotent debit, reset, keyboard/touch, 4 widths, reduced motion, readable no-JS catalogue.');
+    console.log('PASS shop/app: 3 decoded local high-resolution packshots, daily/reuse filters, removed product refusal, one shared session/wallet, real deposit and exchange updates, cancellation, insufficient/busy/unknown/mismatched cost, idempotent debit, reset, keyboard/touch, 4 widths, reduced motion, readable no-JS catalogue.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1)});

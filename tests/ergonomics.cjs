@@ -31,7 +31,7 @@ const go=async(page,id)=>{
 
       // Every close path is harmless; opening starts at the product heading.
       for(const close of ['#eco-shop-close','Escape','#eco-shop-cancel']) {
-        await go(page,'boutique');await press('[data-shop-detail="repair-kit"]');
+        await go(page,'boutique');await press('[data-shop-detail="carry-bag"]');
         assert.equal(await page.evaluate(()=>document.activeElement.id),'eco-shop-product-name');
         assert.ok(await page.locator('#eco-shop-product-name').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'product title visible on first screen');
         assert.equal(await page.locator('#eco-shop-dialog').evaluate(dialog=>dialog.scrollTop),0);

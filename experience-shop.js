@@ -6,11 +6,11 @@
   if (!app || !shop) return;
 
   const products = Object.freeze({
-    'repair-pouch': { label: 'Pochette seconde vie', cost: 20, category: 'reuse', material: 'Chutes textiles et fermeture remplaçable : une piste à sourcer.', use: 'Ranger un câble, un outil ou un petit objet déjà possédé.', care: 'Une couture accessible, une fermeture démontable et une réparation simple seraient prioritaires.', validation: 'À vérifier avant toute fabrication : origine et composition du tissu, solidité, lavage, durée de vie et atelier de confection.' },
+    'repair-pouch': { label: 'Pochette seconde vie', cost: 20, category: 'reuse', material: 'Chutes textiles et fermeture remplaçable : une piste à sourcer.', use: 'Ranger un câble, des écouteurs ou de petits objets déjà possédés.', care: 'Une couture accessible, une fermeture démontable et une réparation simple seraient prioritaires.', validation: 'À vérifier avant toute fabrication : origine et composition du tissu, solidité, lavage, durée de vie et atelier de confection.' },
     'loop-notebook': { label: 'Carnet Loop', cost: 30, category: 'daily', material: 'Papier recyclé et couverture de réemploi : matières à vérifier.', use: 'Prendre des notes, réparer une idée, garder les pages utiles.', care: 'Une reliure démontable permettrait de remplacer les pages plutôt que le carnet entier.', validation: 'À vérifier : part recyclée, origine des fibres, encres, recyclabilité de la couverture et besoin réel face aux carnets déjà disponibles.' },
-    'carry-bag': { label: 'Sac ReCycle', cost: 40, category: 'reuse', material: 'Textile de récupération : aucun pourcentage ni fournisseur validé.', use: 'Transporter ce que vous avez déjà, avec un sac utilisé longtemps.', care: 'Anses renforcées et panneaux cousus permettraient des réparations locales.', validation: 'À vérifier : traçabilité du textile, nettoyage, résistance, réparabilité et usage assez durable pour justifier sa fabrication.' },
-    'repair-kit': { label: 'Kit Réparer', cost: 60, category: 'repair', material: 'Une pochette de réemploi, des pièces et outils à sélectionner selon le besoin.', use: 'Remettre en état un petit objet au lieu de le remplacer.', care: 'Un kit rechargeable accompagné de fiches de réparation, sans équipement inutile.', validation: 'À vérifier : sécurité des outils, pièces adaptées, contenu utile, approvisionnement et accès à un atelier ou à des conseils fiables.' }
+    'carry-bag': { label: 'Sac ReCycle', cost: 40, category: 'reuse', material: 'Textile de récupération : aucun pourcentage ni fournisseur validé.', use: 'Transporter ce que vous avez déjà, avec un sac utilisé longtemps.', care: 'Anses renforcées et panneaux cousus permettraient des réparations locales.', validation: 'À vérifier : traçabilité du textile, nettoyage, résistance, réparabilité et usage assez durable pour justifier sa fabrication.' }
   });
+  const productFilters = new Set(['all', 'reuse', 'daily']);
   let state = { points: initialPoints(), connected: false, busy: false, offline: false, phase: 'disconnected', earned: 0 };
   let selectedProduct = null;
   let pendingExchange = null;
@@ -84,10 +84,12 @@
   app.querySelectorAll('[data-app-open]').forEach(button => button.addEventListener('click', () => selectTab(button.dataset.appOpen, true)));
 
   function applyFilter(filter, announce = true) {
+    if (!productFilters.has(filter)) filter = 'all';
     activeFilter = filter;
     let count = 0;
     shop.querySelectorAll('[data-shop-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.shopFilter === filter)));
     shop.querySelectorAll('[data-shop-product]').forEach(card => {
+      if (!Object.hasOwn(products, card.dataset.shopProduct)) { card.hidden = true; return; }
       const product = products[card.dataset.shopProduct];
       card.hidden = filter !== 'all' && product.category !== filter;
       if (!card.hidden) count++;
@@ -116,7 +118,7 @@
   }
 
   function openProduct(productId) {
-    if (!products[productId] || pendingExchange) return;
+    if (!Object.hasOwn(products, productId) || pendingExchange) return;
     selectedProduct = productId;
     offerCompleted = false;
     renderOffer();

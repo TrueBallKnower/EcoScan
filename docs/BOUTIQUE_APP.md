@@ -6,7 +6,7 @@ EcoScan présente une interface de démonstration intégrée à son site. Elle p
 
 1. **Parcours** : fiche de la station fictive ECO-001, confirmation de session, accès à la simulation. L’app ne dépose pas un objet à distance.
 2. **Portefeuille** : miroir du solde existant, état du dernier dépôt et dernier échange de la visite. Aucune monnaie supplémentaire.
-3. **Boutique** : accès aux concepts, filtrés par réemploi, réparation ou usage quotidien.
+3. **Boutique** : accès aux trois concepts, filtrés par réemploi ou usage quotidien.
 
 La connexion et la fermeture utilisent le gestionnaire central de session du site. Aucune géolocalisation, caméra, création de compte ou permission n’est demandée.
 
@@ -14,16 +14,15 @@ La connexion et la fermeture utilisent le gestionnaire central de session du sit
 
 Réparer, emprunter ou réutiliser ce que l’on possède déjà doit précéder toute nouvelle fabrication. Les EcoPoints ne devraient jamais encourager à consommer, produire ou collecter davantage de déchets uniquement pour une récompense.
 
-Les quatre idées sont des pistes à évaluer, sans fabrication, stock, commande ou livraison :
+Les trois idées sont des pistes à évaluer, sans fabrication, stock, commande ou livraison :
 
 | Identifiant | Concept | Débit de démonstration | À vérifier |
 | --- | --- | ---: | --- |
 | `repair-pouch` | Pochette seconde vie | 20 | Origine et composition des chutes textiles, couture, fermeture, lavage |
 | `loop-notebook` | Carnet Loop | 30 | Fibres, encres, part recyclée, reliure, intérêt face aux carnets disponibles |
 | `carry-bag` | Sac ReCycle | 40 | Traçabilité, nettoyage, résistance, réparation, durée d’utilisation |
-| `repair-kit` | Kit Réparer | 60 | Besoin, sécurité des outils, pièces adaptées, contenu et conseils |
 
-Aucun pourcentage recyclé, bilan carbone, partenaire ou fournisseur n’est annoncé. Les illustrations sont des concepts originaux du site. Les montants ne sont ni des prix commerciaux ni une estimation du coût de fabrication.
+Aucun pourcentage recyclé, bilan carbone, partenaire ou fournisseur n’est annoncé. Les visuels de studio générés montrent plus précisément l’intention de design, les textures et les détails ; ce ne sont pas des photographies de produits fabriqués. Les matières représentées restent à valider. Les montants ne sont ni des prix commerciaux ni une estimation du coût de fabrication.
 
 ## Contrat entre l’interface et le portefeuille
 
@@ -38,6 +37,8 @@ Aucun pourcentage recyclé, bilan carbone, partenaire ou fournisseur n’est ann
 - `ecoscan:wallet-reset` : efface le dernier échange affiché et ferme toute confirmation. Le gestionnaire central remet son registre d’échanges à zéro avec la démonstration.
 
 Le contrat d’échange est synchrone et local, sans serveur. Un identifiant de demande déjà traité doit être idempotent : un second événement identique ne débite pas à nouveau. Un catalogue modifié dans le navigateur ne peut pas imposer son coût au gestionnaire central. Un échec ou un gestionnaire manquant n’affiche pas de commande réussie.
+
+La liste centrale comprend uniquement la pochette, le carnet et le sac. Un identifiant retiré ou inconnu est refusé sans débit. Les filtres actifs sont `all`, `reuse` et `daily` ; un filtre inconnu revient au catalogue complet, sans catégorie vide.
 
 ## Confirmation et accessibilité
 

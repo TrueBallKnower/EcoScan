@@ -10,7 +10,7 @@ Découvrir le produit, essayer le parcours, préparer un prototype, comprendre l
 
 ## 3. Relier la simulation, l’app et la boutique
 
-Un seul solde local, une session fictive partagée et des échanges confirmés une seule fois. Le prototype d’app permet de comprendre connexion, dépôt et portefeuille. La boutique explore quatre objets utiles : pochette, carnet, sac et kit de réparation. Aucun produit n’est fabriqué, disponible ou expédié ; les matériaux recyclés, la réparabilité, les fournisseurs et les prix devront être vérifiés avant tout vrai catalogue.
+Un seul solde local, une session fictive partagée et des échanges confirmés une seule fois. Le prototype d’app permet de comprendre connexion, dépôt et portefeuille. La boutique explore trois objets utiles : pochette, carnet et sac. Des visuels de studio générés rendent les formes, coutures et textures plus lisibles, sans prétendre montrer des objets fabriqués. Aucun produit n’est fabriqué, disponible ou expédié ; les matériaux recyclés, la réparabilité, les fournisseurs et les prix devront être vérifiés avant tout vrai catalogue.
 
 La prévention reste prioritaire : ne pas encourager à produire davantage de déchets pour obtenir des points. Comparer réemploi, réparation et nouveaux objets avant de proposer une récompense.
 

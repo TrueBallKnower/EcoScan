@@ -28,8 +28,7 @@ const exchangeRequests = new Map();
 const conceptProducts = Object.freeze({
   'repair-pouch':{cost:20,label:'Pochette seconde vie'},
   'loop-notebook':{cost:30,label:'Carnet Loop'},
-  'carry-bag':{cost:40,label:'Sac ReCycle'},
-  'repair-kit':{cost:60,label:'Kit Réparer'}
+  'carry-bag':{cost:40,label:'Sac ReCycle'}
 });
 const levels = {pet:45,can:45,paper:45};
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
