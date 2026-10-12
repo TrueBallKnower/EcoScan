@@ -49,6 +49,7 @@ function updateAvailability() {
   document.querySelectorAll('[data-object]').forEach(button=>{button.disabled=busy;button.draggable=!busy;});
   $('drop-zone').setAttribute('aria-disabled',String($('scan').disabled));
   $('dash-session').textContent=connected?'Active (fictive)':'Inactive';
+  $('phone-shortcut').textContent=connected?'Session active · voir le portefeuille ↓':'Étape 1 : connecter l’app de démonstration ↓';
   $('dash-network').textContent=offline?'Hors ligne simulé':'En ligne fictif';
   $('dash-deposits').textContent=deposits;
   renderPoints();
@@ -268,16 +269,19 @@ function updateCapacity() {
 const explainer=$('explainer-video');
 let pendingVideoTime=null;
 function seekChapter() {
-  if(pendingVideoTime===null || explainer.readyState<1)return;
-  explainer.currentTime=Math.min(pendingVideoTime,Math.max(0,explainer.duration-.1));pendingVideoTime=null;
+  if(pendingVideoTime===null || explainer.readyState<1 || !Number.isFinite(explainer.duration))return;
+  const target=Math.min(pendingVideoTime,Math.max(0,explainer.duration-.1));
+  const canSeek=Array.from({length:explainer.seekable.length},(_,i)=>[explainer.seekable.start(i),explainer.seekable.end(i)]).some(([start,end])=>target>=start && target<=end);
+  if(!canSeek){explainer.preload='auto';return;}
+  explainer.currentTime=target;pendingVideoTime=null;
   $('video-status').textContent='Chapitre sélectionné. Appuyez sur lecture pour regarder le film.';
 }
-explainer.addEventListener('loadedmetadata',seekChapter);
+['loadedmetadata','loadeddata','progress','canplay','durationchange'].forEach(event=>explainer.addEventListener(event,seekChapter));
 document.querySelectorAll('[data-video-time]').forEach(button=>button.addEventListener('click',()=>{
   pendingVideoTime=Number(button.dataset.videoTime);
   document.querySelectorAll('[data-video-time]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   $('video-status').textContent='Chargement du chapitre…';
-  if(explainer.readyState<1){explainer.preload='metadata';explainer.load();}else seekChapter();
+  if(explainer.readyState<1){explainer.preload='auto';explainer.load();}else seekChapter();
 }));
 explainer.addEventListener('error',()=>{$('video-status').textContent='La lecture est indisponible. Téléchargez la vidéo ou consultez la transcription.';});
 let scrollScheduled=false;

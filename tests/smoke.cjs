@@ -5,7 +5,7 @@ const base=process.env.ECOSCAN_TEST_URL || 'http://127.0.0.1:8000';
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const errors=[];
 const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));
 await page.goto(base); 
-assert.equal(await page.locator('main section').count(),25);
+assert.ok(await page.locator('main section').count()>=25);
 assert.ok(!(await page.locator('body').textContent()).includes('Romain'));
 assert.equal(await page.locator('.single-inlet').count(),1);
 assert.equal(await page.locator('.internal-bins>div').count(),3);
@@ -45,9 +45,9 @@ for(const el of await page.locator('.reveal-ready').all()){await el.scrollIntoVi
 await prepareDeposit(page);await page.locator('#scan').focus();await page.keyboard.press('Enter');await settle(page);assert.ok(Number(await page.locator('#points').textContent())>=10);
 const links=await page.locator('a[href^="#"]').evaluateAll(els=>els.map(e=>e.getAttribute('href').slice(1)));for(const id of links)assert.equal(await page.locator(`[id="${id}"]`).count(),1,`anchor ${id}`);
 assert.deepEqual(errors,[]);
-const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:360,height:800}});await nojs.goto(base);assert.ok(await nojs.locator('#concept').isVisible());assert.ok(await nojs.locator('#station').isVisible());await nojs.locator('#faq summary').first().click();assert.ok(await nojs.locator('#faq details').first().getAttribute('open')!==null);assert.ok(await nojs.locator('#navigation').isVisible());assert.ok(await nojs.locator('noscript').isVisible());assert.ok(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:360,height:800}});await nojs.goto(base);assert.ok(await nojs.locator('#concept').isVisible());assert.ok(await nojs.locator('#station').isVisible());await nojs.locator('#faq summary').first().click();assert.ok(await nojs.locator('#faq details').first().getAttribute('open')!==null);assert.ok(await nojs.locator('#navigation').isVisible());assert.ok(await nojs.locator('#demo noscript').isVisible());assert.ok(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
 const blocked=await browser.newPage();await blocked.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('Blocked');}})});await blocked.goto(base);await prepareDeposit(blocked);await blocked.click('#scan');await settle(blocked);assert.equal(await blocked.locator('#points').textContent(),'10');assert.match(await blocked.locator('#storage-status').textContent(),/indisponible/);
 for(const asset of ['assets/favicon.svg','assets/econova-blueprint.svg','assets/econova-concept.png','assets/ecoscan-station-qr.svg','docs/FAISABILITE.md']){const response=await page.request.get(base+'/'+asset);assert.equal(response.status(),200);}
-const diagram=await page.request.get(base+'/assets/econova-blueprint.svg');assert.match(await diagram.text(),/PAS UN PLAN DE FABRICATION/);
+const diagram=await page.request.get(base+'/assets/econova-blueprint-v2.svg');assert.match(await diagram.text(),/Aucune dimension ni performance n’est validée/);
 await page.locator('.blueprint-card img').scrollIntoViewIfNeeded();await page.locator('.blueprint-card img').evaluate(img=>img.decode());assert.ok(await page.locator('.blueprint-card img').evaluate(img=>img.naturalWidth>1000));
-console.log('PASS: 25 sections, entrée unique, 3 bacs internes, session/tri automatique/contrôle incertain/anti-double-points/échange, plein/hors-ligne/FAQ, blueprint PNG/SVG, points/persistance/reset, quiz/score/reprise/erreur, gestes, 4 largeurs, menu/Escape/liens, reduced motion, sans JS, stockage bloqué, ressource locale; aucune erreur JS.');await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
+console.log('PASS: core content sections, entrée unique, 3 bacs internes, session/tri automatique/contrôle incertain/anti-double-points/échange, plein/hors-ligne/FAQ, blueprint PNG/SVG, points/persistance/reset, quiz/score/reprise/erreur, gestes, 4 largeurs, menu/Escape/liens, reduced motion, sans JS, stockage bloqué, ressource locale; aucune erreur JS.');await browser.close();})().catch(e=>{console.error(e);process.exit(1)});

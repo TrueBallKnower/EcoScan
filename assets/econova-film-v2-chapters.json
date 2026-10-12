@@ -1,0 +1,50 @@
+{
+  "duration": 92,
+  "chapters": [
+    {
+      "start": 0,
+      "end": 8,
+      "title": "Une entrée. Un nouveau cycle."
+    },
+    {
+      "start": 8,
+      "end": 18,
+      "title": "Ouvrir une session"
+    },
+    {
+      "start": 18,
+      "end": 28,
+      "title": "Une seule ouverture"
+    },
+    {
+      "start": 28,
+      "end": 39,
+      "title": "Séparer les objets"
+    },
+    {
+      "start": 39,
+      "end": 50,
+      "title": "Observer et décider"
+    },
+    {
+      "start": 50,
+      "end": 62,
+      "title": "Aiguiller les matières"
+    },
+    {
+      "start": 62,
+      "end": 72,
+      "title": "Confirmer avant de créditer"
+    },
+    {
+      "start": 72,
+      "end": 83,
+      "title": "Entretenir et mesurer"
+    },
+    {
+      "start": 83,
+      "end": 92,
+      "title": "De la vision au prototype"
+    }
+  ]
+}

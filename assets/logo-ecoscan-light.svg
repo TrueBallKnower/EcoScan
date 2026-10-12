@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 364 82" role="img" aria-labelledby="title desc">
+  <title id="title">EcoScan — un nouveau cycle</title>
+  <desc id="desc">Une feuille forme une boucle ouverte, avec un axe de lecture et deux repères de scan. Version de l’identité pour les fonds sombres.</desc>
+  <g transform="translate(5 4)">
+    <path d="M61 13C35 10 14 20 13 42c-1 20 18 29 33 22 15-7 19-26 15-51Z" fill="#eaf6ed"/>
+    <path d="M61 13C53 24 38 28 31 39c-6 10-5 18 2 26 19-1 33-19 28-52Z" fill="#74dcaa"/>
+    <path d="M20 52c12-10 23-15 35-24" fill="none" stroke="#103e33" stroke-width="4" stroke-linecap="round"/>
+    <path d="M4 27v-9a5 5 0 0 1 5-5h9M55 73h9a5 5 0 0 0 5-5v-9" fill="none" stroke="#b7dcc5" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+  <text x="96" y="57" fill="#eaf6ed" font-family="Inter,Arial,Helvetica,sans-serif" font-size="46" font-weight="700" letter-spacing="-2">EcoScan</text>
+  <circle cx="341" cy="53" r="5" fill="#74dcaa"/>
+</svg>

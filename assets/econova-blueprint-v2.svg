@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 1180" role="img" aria-labelledby="title desc">
+  <title id="title">ÉcoNova ECO-001 — architecture conceptuelle</title>
+  <desc id="desc">Plan de principe en coupe d’une station à entrée unique. Un volet isole le dépôt, un convoyeur sépare les objets, une chambre éclairée les présente aux capteurs, puis un aiguillage les dirige vers les bacs PET, aluminium, papier ou contrôle isolé. Les bacs sont accessibles par une porte de service verrouillable. La session QR serait reliée à une validation de dépôt avant attribution de points. Aucune dimension ni performance n’est validée.</desc>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#9acbb6" stroke-width=".5" opacity=".15"/></pattern>
+    <pattern id="majorGrid" width="140" height="140" patternUnits="userSpaceOnUse"><rect width="140" height="140" fill="url(#grid)"/><path d="M140 0H0V140" fill="none" stroke="#9acbb6" stroke-width=".7" opacity=".12"/></pattern>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#285344"/><stop offset="1" stop-color="#102f29"/></linearGradient>
+    <linearGradient id="sensorGlow" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#80ffd1" stop-opacity=".15"/><stop offset="1" stop-color="#80ffd1" stop-opacity="0"/></linearGradient>
+    <marker id="flowHead" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1 1 7 4.5 1 8" fill="none" stroke="#84edbd" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="guideHead" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M1 1 7 4.5 1 8" fill="none" stroke="#81a99a" stroke-width="1.4"/></marker>
+    <g id="bottle"><path d="M11 0h14v8l5 10v41q0 7-7 7H12q-7 0-7-7V18l6-10Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M9 23h17M9 47h17M11 4h14" fill="none" stroke="currentColor" stroke-width="1.6"/></g>
+    <g id="can"><rect x="2" y="0" width="26" height="43" rx="6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4 6h22M4 37h22M11 3h8" stroke="currentColor" stroke-width="1.5"/></g>
+    <g id="paper"><path d="M4 0h29v39H4Z" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 10h17M10 17h17M10 24h12M0 5v40h28" fill="none" stroke="currentColor" stroke-width="1.5"/></g>
+    <style>
+      text{font-family:Inter,Arial,Helvetica,sans-serif;fill:#eaf5ed}.title{font-size:72px;font-weight:700;letter-spacing:-3px}.eyebrow{font-size:17px;font-weight:700;letter-spacing:2.5px;fill:#83bc9f}.body{font-size:20px;fill:#b8d5c6}.small{font-size:17px;fill:#92b8a5}.label{font-size:24px;font-weight:700;letter-spacing:-.4px}.tiny{font-size:15px;fill:#92b8a5}.outline{fill:none;stroke:#bddfc9;stroke-width:2}.detail{fill:none;stroke:#71988a;stroke-width:1.5}.guide{fill:none;stroke:#8abcaa;stroke-width:1.7}.flow{fill:none;stroke:#84edbd;stroke-width:3.5;marker-end:url(#flowHead)}.optional{fill:none;stroke:#81a99a;stroke-width:2;stroke-dasharray:7 8;marker-end:url(#guideHead)}.number{fill:#84edbd;font-size:20px;font-weight:700}.binlabel{font-size:21px;font-weight:700}.note{font-size:19px;fill:#c5decd}
+    </style>
+  </defs>
+  <rect width="1760" height="1180" rx="8" fill="#09261f"/>
+  <rect x="25" y="25" width="1710" height="1130" rx="8" fill="url(#majorGrid)" stroke="#49715e"/>
+  <text x="76" y="82" class="eyebrow">ECOSCAN / ÉCONOVA ECO-001</text>
+  <text x="74" y="161" class="title" style="font-size:63px">Un seul geste. Un nouveau cycle.</text>
+  <text x="79" y="201" class="body">Une entrée pour vous. Quatre voies internes pour les matières.</text>
+  <rect x="1360" y="60" width="330" height="88" rx="9" fill="#15382e" stroke="#507560"/>
+  <circle cx="1384" cy="87" r="5" fill="#84edbd"/><text x="1400" y="93" class="eyebrow" style="font-size:14px;letter-spacing:1px">ARCHITECTURE CONCEPTUELLE</text>
+  <text x="1385" y="124" class="small">Révision 02 · ni plans ni cotes validés</text>
+  <path d="M78 234H1684" class="detail"/>
+
+  <text x="78" y="290" class="eyebrow">COUPE EXPLICATIVE / IMPLANTATION ILLUSTRATIVE</text>
+  <text x="1680" y="290" class="small" text-anchor="end">Flux matière : continu  /  options mécaniques : pointillé</text>
+
+  <!-- Public-facing shell and protected service volume. -->
+  <path d="M385 403q0-63 63-63h844q56 0 56 56v454q0 51-51 51H448q-63 0-63-63Z" fill="url(#shell)" stroke="#b5d6c1" stroke-width="3"/>
+  <path d="M417 882v18M1317 882v18" stroke="#b5d6c1" stroke-width="14" stroke-linecap="round"/>
+  <rect x="636" y="372" width="684" height="487" rx="10" fill="#0b261f" stroke="#547d65" stroke-width="2"/>
+  <path d="M655 385h645M655 845h645M1305 385v453" class="detail"/>
+  <text x="667" y="411" class="tiny">COUPE EXPLICATIVE / ACCÈS RÉSERVÉ À LA MAINTENANCE</text>
+
+  <!-- The only public inlet. -->
+  <path d="M426 432q0-22 22-22h125q24 0 27 24l11 90q3 23-22 23H453q-28 0-30-28Z" fill="#051811" stroke="#8ad9ad" stroke-width="3"/>
+  <path d="M445 426v96M447 529h143" stroke="#7dbea0" stroke-width="2"/>
+  <path d="M444 426h129l11 84H451Z" fill="#143c2c"/>
+  <path d="M459 452h112M459 469h112M459 486h112" stroke="#305941" stroke-width="2"/>
+  <rect x="442" y="577" width="112" height="78" rx="8" fill="#09271d" stroke="#64967b"/>
+  <text x="498" y="608" class="small" text-anchor="middle">ÉcoNova</text>
+  <path d="M460 627h76" stroke="#84edbd" stroke-width="3" stroke-linecap="round"/>
+  <!-- QR plaque symbol, deliberately diagrammatic. -->
+  <rect x="570" y="574" width="47" height="81" rx="7" fill="#072116" stroke="#64967b"/>
+  <g fill="none" stroke="#cce8d7" stroke-width="2"><rect x="578" y="583" width="10" height="10"/><rect x="599" y="583" width="10" height="10"/><rect x="578" y="604" width="10" height="10"/></g>
+  <path d="M592 583v9h4v10h10v6h-13v8M582 598h10" fill="none" stroke="#cce8d7" stroke-width="2"/>
+  <path d="M581 639h25" stroke="#84edbd" stroke-width="2.5"/>
+  <text x="521" y="721" class="label" text-anchor="middle">UNE ENTRÉE</text>
+  <text x="521" y="750" class="small" text-anchor="middle">aucun choix de bac</text>
+  <text x="521" y="830" class="tiny" text-anchor="middle">ECO-001 / FACE UTILISATEUR</text>
+
+  <!-- Belt, gated singulation and camera chamber. -->
+  <path d="M601 513h415q20 0 20 21t-20 21H601" fill="#1c3a2c" stroke="#a6cbb4" stroke-width="2"/>
+  <path d="M610 529h406M610 543h406" class="detail"/>
+  <g fill="#103323" stroke="#83ad93"><circle cx="645" cy="535" r="10"/><circle cx="712" cy="535" r="10"/><circle cx="779" cy="535" r="10"/><circle cx="846" cy="535" r="10"/><circle cx="913" cy="535" r="10"/><circle cx="980" cy="535" r="10"/></g>
+  <path d="M663 449v63M709 449v63" stroke="#bccfbf" stroke-width="5"/>
+  <rect x="653" y="440" width="66" height="15" rx="4" fill="#bfd4c5"/>
+  <text x="650" y="580" class="tiny">DOSAGE</text><text x="650" y="601" class="tiny">OBJETS ESPACÉS</text>
+  <g transform="translate(735 474) rotate(76)" color="#9dc5af"><use href="#can"/></g>
+  <rect x="807" y="426" width="212" height="92" rx="5" fill="url(#sensorGlow)" stroke="#6b927c" stroke-width="2"/>
+  <path d="M821 432h183" stroke="#b7efcb" stroke-width="4" stroke-linecap="round"/>
+  <rect x="884" y="429" width="49" height="23" rx="6" fill="#082319" stroke="#a0c0ac"/>
+  <circle cx="908" cy="440" r="7" stroke="#84edbd" fill="#071610" stroke-width="2"/>
+  <path d="M901 454 855 511M915 454l48 57" stroke="#82bc98" stroke-width="1.5" stroke-dasharray="4 5"/>
+  <g transform="translate(898 469) rotate(75)" color="#dbefdd"><use href="#bottle" transform="scale(.7)"/></g>
+  <path d="M755 518h22M947 518h54" class="flow"/>
+
+  <!-- Distribution stage: paths represent alternatives, not simultaneous flows. -->
+  <path d="M1039 535v32q0 16 16 16h87" class="flow"/>
+  <rect x="1101" y="569" width="83" height="39" rx="6" fill="#285b3d" stroke="#b6dbbd" stroke-width="2"/>
+  <circle cx="1142" cy="588" r="9" fill="#8edcaf"/>
+  <path d="M1142 608v12" class="outline"/>
+  <path d="M1142 620H744v49" class="flow"/>
+  <path d="M1142 620H941v49M1142 620v49M1142 620h131v49" class="optional"/>
+  <text x="937" y="601" class="tiny" text-anchor="middle">AIGUILLAGE / UN CHEMIN À LA FOIS</text>
+  <path d="M672 638h589" class="detail"/>
+
+  <!-- Collection drawers, each isolated with fill sensor. -->
+  <g>
+    <rect x="663" y="675" width="165" height="163" rx="6" fill="#15433e" stroke="#90cfb0" stroke-width="2"/>
+    <path d="M675 690h141M684 796h120" stroke="#589984" stroke-width="2"/>
+    <rect x="714" y="687" width="64" height="7" rx="3" fill="#82bb9d"/>
+    <g transform="translate(710 719)" color="#b9e4ce"><use href="#bottle"/></g>
+    <text x="745" y="817" class="binlabel" text-anchor="middle">PET</text>
+    <circle cx="684" cy="710" r="4" fill="#84edbd"/>
+    <rect x="858" y="675" width="165" height="163" rx="6" fill="#294933" stroke="#9cbdaa" stroke-width="2"/>
+    <path d="M870 690h141M879 796h120" stroke="#6a946f" stroke-width="2"/>
+    <rect x="908" y="687" width="64" height="7" rx="3" fill="#82bb9d"/>
+    <g transform="translate(925 732)" color="#c2e1c8"><use href="#can"/></g>
+    <text x="940" y="817" class="binlabel" text-anchor="middle">ALUMINIUM</text>
+    <circle cx="879" cy="710" r="4" fill="#84edbd"/>
+    <rect x="1053" y="675" width="165" height="163" rx="6" fill="#4a4533" stroke="#c7bf9b" stroke-width="2"/>
+    <path d="M1065 690h141M1074 796h120" stroke="#9a9271" stroke-width="2"/>
+    <rect x="1104" y="687" width="64" height="7" rx="3" fill="#c7bf9b"/>
+    <g transform="translate(1117 729)" color="#e5dfb6"><use href="#paper"/></g>
+    <text x="1135" y="817" class="binlabel" text-anchor="middle">PAPIER SEC</text>
+    <circle cx="1074" cy="710" r="4" fill="#84edbd"/>
+    <rect x="1246" y="675" width="60" height="163" rx="6" fill="#27372f" stroke="#a2b4a4" stroke-width="2"/>
+    <path d="M1254 690h44" stroke="#a2b4a4" stroke-width="3"/>
+    <text x="1276" y="764" font-size="40" font-weight="700" text-anchor="middle">?</text>
+    <text x="1276" y="818" class="tiny" text-anchor="middle">ISOLÉ</text>
+    <circle cx="1258" cy="710" r="4" fill="#d4cf98"/>
+  </g>
+
+  <!-- Calls, separated into useful engineering questions. -->
+  <g>
+    <circle cx="101" cy="361" r="21" fill="#244637" stroke="#75bd99"/><text x="101" y="368" class="number" text-anchor="middle">01</text>
+    <text x="78" y="413" class="label">Dépôt commun</text>
+    <text x="78" y="445" class="body">Volet protégé.</text><text x="78" y="474" class="body">Interverrouillage prévu.</text>
+    <path d="M80 491h217l113 3" class="guide"/><circle cx="420" cy="494" r="4" fill="#9edcba"/>
+    <circle cx="101" cy="584" r="21" fill="#244637" stroke="#75bd99"/><text x="101" y="591" class="number" text-anchor="middle">02</text>
+    <text x="78" y="636" class="label">Séparer avant</text><text x="78" y="665" class="label">de reconnaître.</text>
+    <text x="78" y="699" class="body">Un objet à la fois.</text><text x="78" y="728" class="body">Blocages à détecter.</text>
+    <path d="M80 747h215l35-170h305" class="guide"/><circle cx="639" cy="577" r="4" fill="#9edcba"/>
+    <circle cx="1475" cy="355" r="21" fill="#244637" stroke="#75bd99"/><text x="1475" y="362" class="number" text-anchor="middle">03</text>
+    <text x="1452" y="406" class="label">Chambre de scan</text>
+    <text x="1452" y="438" class="body">Caméra + lumière.</text><text x="1452" y="467" class="body">Capteurs à comparer.</text>
+    <path d="M1690 488h-259l-51-174H995v109" class="guide"/><circle cx="995" cy="426" r="4" fill="#9edcba"/>
+    <circle cx="1475" cy="583" r="21" fill="#244637" stroke="#75bd99"/><text x="1475" y="590" class="number" text-anchor="middle">04</text>
+    <text x="1452" y="634" class="label">Routage interne</text>
+    <text x="1452" y="667" class="body">Filière acceptée → bac.</text><text x="1452" y="696" class="body">Doute → contrôle isolé.</text>
+    <path d="M1690 716h-275l-33-115h-192" class="guide"/><circle cx="1188" cy="601" r="4" fill="#9edcba"/>
+  </g>
+
+  <!-- Maintenance indicators and separate digital trace. -->
+  <path d="M367 870h997" stroke="#82bc98" stroke-width="1.3" stroke-dasharray="5 7"/>
+  <text x="868" y="883" text-anchor="middle" class="tiny">PORTE DE SERVICE VERROUILLABLE / BACS AMOVIBLES / NETTOYAGE / CAPTEURS DE NIVEAU ENVISAGÉS</text>
+  <path d="M594 658v278h607" stroke="#779c86" stroke-width="2" stroke-dasharray="4 7" marker-end="url(#guideHead)" fill="none"/>
+  <rect x="769" y="915" width="440" height="44" rx="22" fill="#18382b" stroke="#719780"/>
+  <text x="989" y="943" class="small" text-anchor="middle">QR → session → dépôt validé → points</text>
+  <text x="1261" y="943" class="tiny">FLUX NUMÉRIQUE ENVISAGÉ</text>
+
+  <path d="M78 984H1684" class="detail"/>
+  <text x="79" y="1028" class="eyebrow">CE QUI DEVRA ÊTRE PROUVÉ AU PROTOTYPE</text>
+  <text x="79" y="1070" class="note">01  Séparation des mélanges</text><text x="526" y="1070" class="note">02  Précision et gestion du doute</text><text x="1083" y="1070" class="note">03  Sécurité et qualité des filières</text>
+  <text x="79" y="1120" class="small">Schéma de concept, sans cotes ni performance garantie. Dépôts admis, matériaux, mécanismes et conformité à valider.</text>
+  <text x="1684" y="1120" class="small" text-anchor="end">ECOSCAN / 2026</text>
+</svg>
