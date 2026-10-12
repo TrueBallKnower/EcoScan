@@ -19,7 +19,17 @@ const items = {
   cup: ['Gobelet de café', '☕', 'Un gobelet peut comporter un revêtement qui empêche son recyclage avec le papier. Ne vous fiez pas seulement à son apparence : consultez les consignes du lieu et séparez le couvercle si demandé.', 'Apportez une tasse réutilisable et demandez si elle peut être remplie.'],
   food: ['Emballage alimentaire', '▱', 'Les emballages alimentaires sont très variables : plastique, carton, aluminium ou couches composites. Videz les restes et vérifiez les matériaux et les filières acceptées ; en cas de doute, demandez au responsable du point de collecte.', 'Utilisez une boîte réutilisable et adaptez les portions pour limiter les restes.']
 };
+let scanned = false, sorted = false, rewarded = false;
+function resetJourney() {
+  scanned = false; sorted = false; rewarded = false;
+  $('sort-choices').disabled = true; $('earn').disabled = true; $('scan').disabled = false;
+  $('scan-status').textContent = 'Choisissez votre objet, puis lancez la lecture simulée.';
+  $('sort-feedback').textContent = ''; $('earn-feedback').textContent = '';
+  document.querySelectorAll('[data-bin]').forEach(b => {b.classList.remove('chosen','incorrect'); b.setAttribute('aria-pressed','false');});
+  $('step-scan').classList.add('active'); $('step-sort').classList.remove('active'); $('step-earn').classList.remove('active');
+}
 function showItem() {
+  resetJourney();
   const [title, symbol, advice, reduce] = items[$('item').value];
   $('item-title').textContent = title; $('item-symbol').textContent = symbol;
   $('advice').replaceChildren();
@@ -36,8 +46,29 @@ catch { $('storage-status').textContent = 'Stockage indisponible : les points re
 function renderPoints() { $('points').textContent = points; }
 function savePoints() { try {localStorage.setItem('ecoscan-demo-points',String(points));} catch { $('storage-status').textContent = 'Stockage indisponible : les points ne seront pas conservés après cette visite.'; } renderPoints(); }
 renderPoints();
-$('earn').addEventListener('click', () => { points = Math.min(points + 10,1000000); savePoints(); $('earn-feedback').textContent = '10 points fictifs ajoutés. Aucun tri réel n’a été vérifié.'; });
-$('reset').addEventListener('click', () => { points = 0; savePoints(); $('earn-feedback').textContent = 'Votre compteur de démonstration est remis à zéro.'; });
+$('scan').addEventListener('click', () => {
+  scanned = true; $('sort-choices').disabled = false; $('scan').disabled = true;
+  $('step-sort').classList.add('active');
+  const uncertain = ['cup','food'].includes($('item').value);
+  $('scan-status').textContent = uncertain ? 'Lecture simulée : matériau potentiellement composite. Une consigne locale est nécessaire ; nous ne choisissons pas une filière au hasard.' : `Lecture simulée : ${items[$('item').value][0]}. Pour cet exercice, choisissez la filière dédiée indiquée dans le conseil.`;
+});
+document.querySelectorAll('[data-bin]').forEach(button => button.addEventListener('click',() => {
+  if(!scanned || rewarded) return;
+  const expected = ['cup','food'].includes($('item').value) ? 'check' : $('item').value;
+  document.querySelectorAll('[data-bin]').forEach(b => {b.classList.remove('chosen','incorrect'); b.setAttribute('aria-pressed',String(b===button));});
+  sorted = button.dataset.bin === expected;
+  button.classList.add(sorted ? 'chosen' : 'incorrect'); $('earn').disabled = !sorted;
+  $('step-earn').classList.toggle('active',sorted);
+  $('sort-feedback').textContent = sorted ? (expected === 'check' ? 'Bon réflexe : demander une consigne fiable vaut mieux qu’un tri au hasard. Vous pouvez valider cet apprentissage simulé.' : 'Bonne orientation pour cet exercice. Dans la réalité, vérifiez toujours la consigne du lieu.') : 'Ce choix ne convient pas au scénario. Relisez le conseil et essayez une autre orientation : aucun point n’a été ajouté.';
+}));
+$('earn').addEventListener('click', () => {
+  if(!scanned || !sorted || rewarded) return;
+  rewarded = true; points = Math.min(points + 10,1000000); savePoints();
+  $('earn').disabled = true; $('sort-choices').disabled = true;
+  $('earn-feedback').textContent = 'Parcours terminé : 10 points fictifs ajoutés une seule fois. Aucun tri réel n’a été vérifié. Recommencez pour explorer un autre geste.';
+});
+$('new-item').addEventListener('click', () => {resetJourney(); $('item').focus();});
+$('reset').addEventListener('click', () => { points = 0; savePoints(); resetJourney(); $('earn-feedback').textContent = 'Votre compteur de démonstration est remis à zéro.'; });
 const questions = [
   { q:'Quel réflexe préserve les ressources le plus en amont ?', a:['Réduire les achats et les déchets','Recycler chaque objet après usage','Remplacer plus souvent ses objets'], correct:0, explanation:'Réduire évite de mobiliser des ressources dès le départ. Le réemploi et la réparation viennent ensuite, avant le recyclage.' },
   { q:'Un gobelet qui ressemble à du papier va-t-il toujours dans le bac papier ?', a:['Oui, son apparence suffit','Non, il faut vérifier son revêtement et les consignes','Oui, s’il contient du café'], correct:1, explanation:'Certains gobelets sont composites. L’apparence ne suffit pas à déterminer la filière : consultez les consignes locales.' },
@@ -78,3 +109,12 @@ if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: red
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}),{threshold:.08});
   document.querySelectorAll('.section>h2,.section>.grid,.campus-art').forEach(el => {el.classList.add('reveal-ready');observer.observe(el);});
 }
+
+function updateStation() {
+  const fill = Number($('fill-level').value), offline = $('offline').checked;
+  $('fill-value').textContent = `${fill} %`; $('fill-meter').value = fill;
+  $('fill-meter').textContent = `${fill} %`;
+  $('fill-status').textContent = fill >= 100 ? 'Simulation : bac plein. Orienter vers un autre point de collecte autorisé et prévenir l’équipe ; ne pas laisser de déchets au sol.' : fill >= 85 ? 'Simulation : seuil de collecte atteint (85 % choisi pour cette démo). Une intervention serait à planifier ; aucune alerte réelle n’est envoyée.' : fill >= 70 ? 'Simulation : niveau à surveiller. Anticiper la tournée selon les contraintes du lieu.' : 'Simulation : capacité disponible. Le niveau ne renseigne pas sur la qualité du tri.';
+  $('offline-status').textContent = offline ? 'Mode hors ligne simulé : les niveaux ne seraient plus transmis. Les étiquettes physiques restent lisibles ; aucun bac n’est verrouillé.' : 'Connexion simulée disponible : les niveaux pourraient être transmis sous forme agrégée. Aucune connexion réelle à une station.';
+}
+$('fill-level').addEventListener('input',updateStation); $('offline').addEventListener('change',updateStation); updateStation();

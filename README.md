@@ -1,6 +1,6 @@
 # EcoScan
 
-Site statique en français pour une campagne académique non lucrative sur le gaspillage des ressources à l’UNIL. Projet d’Albin Krasniqi et Romain Nauer — HEC Lausanne, Université de Lausanne. Aucun partenariat officiel ni déploiement sur le campus n’est revendiqué.
+Site statique en français pour une campagne académique non lucrative sur le gaspillage des ressources à l’UNIL. Projet d’Albin Krasniqi — HEC Lausanne, Université de Lausanne. Aucun partenariat officiel ni déploiement sur le campus n’est revendiqué.
 
 ## Ouvrir le site
 
@@ -65,3 +65,13 @@ node tests/smoke.cjs
 ```
 
 Sur une autre machine, Playwright et Chromium doivent être installés séparément pour exécuter ces tests. Vous pouvez aussi utiliser les vérifications manuelles ci-dessus sans rien installer. `ECOSCAN_TEST_URL` permet de cibler une autre URL, y compris un chemin `/EcoScan`.
+
+## Station EcoScan et nouvelle simulation
+
+Le site présente désormais une station modulaire à trois compartiments (PET, aluminium et papier) dessinée en CSS. C’est un design de concept, pas un plan de fabrication ni un équipement installé. La section « Comment ça fonctionnerait » explique l’orientation des objets, la collecte séparée, les niveaux de remplissage et le fonctionnement hors ligne. Une FAQ et une liste des conditions d’un pilote complètent la présentation.
+
+La démo suit trois étapes : sélectionner un objet, cliquer sur « Simuler la lecture », puis choisir un compartiment. Un choix incorrect affiche une explication sans points. Pour le gobelet et l’emballage alimentaire, la réponse attendue est « Vérifier la consigne » car leur composition est incertaine. Une bonne réponse débloque la validation de 10 points fictifs, une seule fois par parcours ; « Recommencer un geste » permet un nouvel essai. Ces points ne prouvent aucune action réelle.
+
+Le curseur de remplissage et la case « connexion coupée » ne pilotent aucun matériel. Le seuil de 85 % est choisi uniquement pour illustrer la démo. Tous les compteurs de station sont fictifs et aucune alerte n’est envoyée. Pour changer ces scénarios, modifiez `updateStation()` dans `script.js`. Pour adapter le design, modifiez les classes `.station-*` et `.physical-bin` dans `styles.css`.
+
+Les mentions publiques du projet sont attribuées à Albin Krasniqi. Le brief d’origine dans `docs/BRIEF_SOURCE.md` reste conservé comme document historique de référence, sans servir de liste actuelle de fondateurs.
