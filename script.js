@@ -49,7 +49,8 @@ function updateAvailability() {
   document.querySelectorAll('[data-object]').forEach(button=>{button.disabled=busy;button.draggable=!busy;});
   $('drop-zone').setAttribute('aria-disabled',String($('scan').disabled));
   $('dash-session').textContent=connected?'Active (fictive)':'Inactive';
-  $('phone-shortcut').textContent=connected?'Session active · voir le portefeuille ↓':'Étape 1 : connecter l’app de démonstration ↓';
+  const phoneShortcut=$('phone-shortcut');
+  if(phoneShortcut)phoneShortcut.textContent=connected?'Session active · voir le portefeuille ↓':'Étape 1 : connecter l’app de démonstration ↓';
   $('dash-network').textContent=offline?'Hors ligne simulé':'En ligne fictif';
   $('dash-deposits').textContent=deposits;
   renderPoints();
