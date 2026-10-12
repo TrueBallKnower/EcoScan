@@ -93,3 +93,26 @@ La connexion réelle d’une poubelle à une app demanderait du matériel, des c
 Pour adapter les scénarios, modifier `updateAvailability()`, les données `items`, le traitement du bouton `scan` et `updateStation()` dans `script.js`. Le seuil de 85 % est un choix de démo. Pour le design, modifier les classes `.machine-*`, `.internal-bins`, `.phone-demo` et `.route-*` dans `styles.css`.
 
 Les mentions publiques du projet sont attribuées à Albin Krasniqi. Le brief d’origine dans `docs/BRIEF_SOURCE.md` reste un document historique ; cette évolution vers le tri automatique suit la nouvelle demande du porteur du projet.
+
+## Amélioration V2 — interaction et blueprint
+
+Le site conserve son HTML/CSS/JavaScript natif, ses 18 sections et ses ressources PNG/SVG. Le blueprint PNG conserve l’illustration existante ; le SVG précise désormais caméra/éclairage, contrôle des inconnus, capteurs de remplissage et porte de collecte. Les vues « Extérieur / Coupe / Mécanisme » changent la présentation du même concept CSS, sans créer une preuve de produit réel. Les boutons de repères et de trajet sont utilisables au clavier.
+
+La simulation permet le glisser-déposer à la souris, avec les événements natifs et une alternative par pointeur pour les navigateurs qui ne déclenchent pas le drag natif sur une carte. Au tactile et au clavier, sélectionner une carte d’objet puis utiliser le bouton « Déposer », ou focaliser l’ouverture et appuyer sur Entrée/Espace. Le scénario mélangé reste disponible dans la liste. Les étapes affichées sont : objet détecté → analyse simulée → routage simulé → validation ou contrôle requis. Aucun chronométrage matériel n’est affiché ; les animations ne sont pas une mesure de performance.
+
+Un identifiant local d’opération protège la séquence asynchrone : chaque dépôt est crédité après validation et une seule fois. Déconnexion, mise hors ligne, remplissage d’un bac requis, nouveau dépôt et remise à zéro annulent toute opération non validée. Les callbacks d’animation annulés n’attribuent aucun point. La réduction des animations accélère la présentation tout en conservant les règles.
+
+Le tableau de bord et le téléphone partagent le même solde. Les compteurs de dépôts validés sont locaux à la visite, la session se ferme au rechargement, et seul le portefeuille est conservé si le stockage est autorisé. Les trois niveaux sont réglés manuellement : ils ne constituent pas des mesures et ne changent pas automatiquement après un dépôt. PET plein ne bloque pas aluminium ; un mélange nécessite les trois bacs. Pour un objet inconnu, le chemin de contrôle n’est pas une filière recyclée et n’attribue aucun point.
+
+« Nouveau dépôt » annule le traitement en cours et prépare un autre objet. « Remettre les points à zéro » réinitialise le portefeuille et le compteur de dépôts sans changer les niveaux. « Recommencer toute la démo » réinitialise aussi session, connexion, niveaux et sélection.
+
+### Vérification V2
+
+Avec un serveur Python actif, exécuter les deux suites :
+
+```sh
+node tests/smoke.cjs
+node tests/upgrade.cjs
+```
+
+Pour tester le sous-chemin de publication, servir le parent du dépôt puis utiliser `ECOSCAN_TEST_URL=http://127.0.0.1:8010/EcoScan` devant chaque commande. La suite V2 vérifie aussi un glisser-déposer réel, le parcours avec écran tactile émulé, les interruptions pendant l’animation, le crédit unique, les remplissages distincts et les commandes du blueprint. Playwright/Chromium servent uniquement aux tests, sans dépendance ajoutée au site.

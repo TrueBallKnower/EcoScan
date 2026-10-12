@@ -20,73 +20,151 @@ const items = {
   cup: ['Gobelet de café', '☕', 'Un gobelet peut comporter un revêtement qui empêche son recyclage avec le papier. Ne vous fiez pas seulement à son apparence : consultez les consignes du lieu et séparez le couvercle si demandé.', 'Apportez une tasse réutilisable et demandez si elle peut être remplie.'],
   food: ['Emballage alimentaire', '▱', 'Les emballages alimentaires sont très variables : plastique, carton, aluminium ou couches composites. Videz les restes et vérifiez les matériaux et les filières acceptées ; en cas de doute, demandez au responsable du point de collecte.', 'Utilisez une boîte réutilisable et adaptez les portions pour limiter les restes.']
 };
-let connected = false, deposited = false, points = 0;
+// One shared state for station, phone, levels and animated transactions.
+let connected = false, deposited = false, busy = false, points = 0, deposits = 0;
+let transaction = 0;
+const levels = {pet:45,can:45,paper:45};
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 try { const saved = Number(localStorage.getItem('ecoscan-demo-points')); if(Number.isSafeInteger(saved) && saved >= 0 && saved <= 1000000) points = saved; }
 catch { $('storage-status').textContent = 'Stockage indisponible : les points restent disponibles pendant cette visite.'; }
-function renderPoints() { $('points').textContent = points; }
+function routesFor(value) { return value === 'mix' ? ['pet','can','paper'] : ['cup','food'].includes(value) ? ['check'] : [value]; }
+function isFull(value = $('item').value) { return routesFor(value).some(route => levels[route] >= 100); }
+function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; }
 function savePoints() {
-  try { localStorage.setItem('ecoscan-demo-points',String(points)); }
+  try {localStorage.setItem('ecoscan-demo-points',String(points));}
   catch { $('storage-status').textContent = 'Stockage indisponible : les points ne seront pas conservés après cette visite.'; }
   renderPoints();
 }
+function setPhase(phase, message) {
+  $('drop-zone').dataset.state = phase;
+  if(message) $('scan-status').textContent = message;
+  const order=['detecting','scanning','routing','confirmed'], index=order.indexOf(phase);
+  document.querySelectorAll('[data-lab]').forEach((el,i)=>el.classList.toggle('active',index>=i));
+}
 function updateAvailability() {
-  const offline = $('offline').checked, full = Number($('fill-level').value) >= 100;
-  $('scan').disabled = !connected || deposited || offline || full;
+  const offline=$('offline').checked, full=isFull();
+  $('scan').disabled = !connected || deposited || busy || offline || full;
   $('connect').disabled = offline && !connected;
-  $('scan-status').textContent = deposited ? 'Dépôt simulé traité. Préparez un nouveau dépôt pour continuer.' : offline ? 'Connexion indisponible dans la simulation : dépôt et transfert de points suspendus.' : full ? 'Compartiment cible plein : dépôt suspendu. Un passage de collecte serait nécessaire.' : connected ? 'Session active : déposez votre objet dans l’ouverture unique. Le tri et les points sont automatiques dans cette démo.' : 'Connectez d’abord le téléphone de démonstration.';
+  $('item').disabled=busy;
+  document.querySelectorAll('[data-object]').forEach(button=>{button.disabled=busy;button.draggable=!busy;});
+  $('drop-zone').setAttribute('aria-disabled',String($('scan').disabled));
+  $('dash-session').textContent=connected?'Active (fictive)':'Inactive';
+  $('dash-network').textContent=offline?'Hors ligne simulé':'En ligne fictif';
+  $('dash-deposits').textContent=deposits;
+  renderPoints();
+  if(busy) return;
+  if(deposited) { $('scan-status').textContent='Dépôt simulé traité. Préparez un nouveau dépôt pour continuer.'; return; }
+  const phase=offline?'blocked-offline':!connected?'disconnected':full?'blocked-full':'ready';
+  setPhase(phase,offline?'Connexion indisponible : dépôt et crédit fictif suspendus.':!connected?'Connectez d’abord le téléphone de démonstration.':full?'Compartiment nécessaire plein : dépôt suspendu. Réglez son niveau pour simuler une collecte.':'Prêt : glissez un objet dans l’ouverture ou utilisez le bouton de dépôt.');
 }
 function resetJourney() {
-  deposited = false; $('sort-feedback').textContent = ''; $('earn-feedback').textContent = '';
-  document.querySelectorAll('[data-route]').forEach(el => el.classList.remove('routed'));
+  transaction++; busy=false; deposited=false;
+  $('sort-feedback').textContent=''; $('earn-feedback').textContent='';
+  $('wallet-receipt').textContent='En attente d’un nouveau dépôt simulé.';
+  $('points').classList.remove('wallet-credit');
+  document.querySelectorAll('[data-route]').forEach(el=>el.classList.remove('routed'));
+  document.querySelectorAll('[data-lab]').forEach(el=>el.classList.remove('active'));
   $('step-scan').classList.toggle('active',connected); $('step-sort').classList.remove('active'); $('step-earn').classList.remove('active');
   updateAvailability();
 }
 function showItem() {
   resetJourney();
-  const [title, symbol, advice, reduce] = items[$('item').value];
-  $('item-title').textContent = title; $('item-symbol').textContent = symbol;
+  const [title,symbol,advice,reduce]=items[$('item').value];
+  $('item-title').textContent=title; $('item-symbol').textContent=symbol; $('moving-object').textContent=symbol;
+  document.querySelectorAll('[data-object]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.object===$('item').value)));
   $('advice').replaceChildren();
-  for (const [label, text] of [['Matière et limites du scénario',advice],['Éviter le prochain déchet',reduce]]) {
-    const p = document.createElement('p'), strong = document.createElement('strong');
-    strong.textContent = label + ' : '; p.append(strong,document.createTextNode(text)); $('advice').append(p);
+  for(const [label,text] of [['Matière et limites du scénario',advice],['Éviter le prochain déchet',reduce]]) {
+    const p=document.createElement('p'),strong=document.createElement('strong');strong.textContent=label+' : ';p.append(strong,document.createTextNode(text));$('advice').append(p);
   }
 }
-$('connect').addEventListener('click', () => {
-  if($('offline').checked && !connected) return;
-  connected = !connected;
-  $('connect').textContent = connected ? 'Terminer la session simulée' : 'Simuler la connexion à ECO-001';
-  $('session-status').textContent = connected ? 'Session fictive active · ÉcoNova ECO-001. Aucun téléphone réel n’est connecté.' : 'Session terminée. Le prochain dépôt nécessite une nouvelle connexion simulée.';
+$('connect').addEventListener('click',()=>{
+  if($('offline').checked&&!connected)return;
+  connected=!connected;
+  $('connect').textContent=connected?'Terminer la session simulée':'Simuler la connexion à ECO-001';
+  $('session-status').textContent=connected?'Session fictive active · ÉcoNova ECO-001. Aucun téléphone réel n’est connecté.':'Session terminée. Le prochain dépôt nécessite une nouvelle connexion simulée.';
   resetJourney();
 });
-$('scan').addEventListener('click', () => {
-  if(!connected || deposited || $('offline').checked || Number($('fill-level').value) >= 100) return;
-  deposited = true;
-  const value = $('item').value, uncertain = ['cup','food'].includes(value), route = uncertain ? 'check' : value;
-  const routes = value === 'mix' ? ['pet','can','paper'] : [route];
-  routes.forEach(destination => document.querySelector(`[data-route="${destination}"]`).classList.add('routed'));
+async function startDeposit() {
+  if(!connected || deposited || busy || $('offline').checked || isFull()) { updateAvailability(); return; }
+  const id=++transaction,value=$('item').value,routes=routesFor(value),uncertain=routes.includes('check');
+  busy=true; updateAvailability();
+  const valid=()=>id===transaction && connected && !$('offline').checked && !isFull(value);
+  const pause=()=>new Promise(resolve=>setTimeout(resolve,reducedMotion()?25:420));
+  setPhase('detecting','Objet détecté dans l’ouverture — déplacement virtuel.');
+  await pause(); if(!valid())return;
+  setPhase('scanning','Analyse simulée — identification programmée, sans caméra ni IA réelle.');
+  await pause(); if(!valid())return;
+  setPhase('routing',uncertain?'Routage simulé vers le contrôle isolé.':'Routage simulé vers les compartiments internes.');
   $('step-sort').classList.add('active');
-  $('sort-feedback').textContent = value === 'mix' ? 'Dépôt mélangé simulé : trois objets séparés puis automatiquement orientés vers PET, aluminium et papier. Le mécanisme de séparation n’est pas réel dans cette démo.' : uncertain ? 'Analyse simulée incertaine : objet orienté vers un contrôle dédié, isolé des filières recyclables. Aucun point crédité. La gestion physique de ce cas reste à prototyper.' : `Tri simulé : ${items[value][0]} orienté automatiquement vers le compartiment interne ${value === 'pet' ? 'PET' : value === 'can' ? 'aluminium' : 'papier'}. Vous n’avez pas choisi de bac.`;
+  routes.forEach(route=>document.querySelector(`[data-route="${route}"]`).classList.add('routed'));
+  await pause(); if(!valid())return;
+  // Commit once, after all stages. Cancellation never grants points.
+  busy=false; deposited=true;
+  setPhase(uncertain?'rejected':'confirmed');
+  $('sort-feedback').textContent=value==='mix'?'Dépôt mélangé simulé : trois objets séparés puis automatiquement orientés vers PET, aluminium et papier. Le mécanisme de séparation reste à tester.':uncertain?'Analyse simulée incertaine : contrôle dédié, isolé des filières. Aucun point crédité.':`Tri simulé : ${items[value][0]} orienté automatiquement vers le compartiment ${value==='pet'?'PET':value==='can'?'aluminium':'papier'}.`;
   if(!uncertain) {
-    const awarded = Math.min(value === 'mix' ? 30 : 10,1000000-points); points += awarded; savePoints();
-    $('step-earn').classList.add('active');
-    $('wallet-receipt').textContent = `+${awarded} EcoPoints fictifs reçus automatiquement pour ce dépôt simulé.`;
-    $('earn-feedback').textContent = 'Crédit local effectué une seule fois. Ce reçu ne prouve aucun tri réel ni transfert vers une application.';
-  } else { $('wallet-receipt').textContent = 'Dépôt incertain : aucun EcoPoint ajouté.'; }
+    const awarded=Math.min(value==='mix'?30:10,1000000-points);points+=awarded;deposits++;savePoints();
+    $('step-earn').classList.add('active');$('points').classList.add('wallet-credit');
+    $('wallet-receipt').textContent=`+${awarded} EcoPoints fictifs reçus après validation du dépôt simulé.`;
+    $('earn-feedback').textContent='Validation simulée terminée. Un seul crédit local pour ce dépôt ; aucun transfert vers une application réelle.';
+  } else {$('wallet-receipt').textContent='Objet incertain : aucun EcoPoint ajouté.';}
   updateAvailability();
+}
+$('scan').addEventListener('click',startDeposit);
+$('drop-zone').addEventListener('click',startDeposit);
+$('drop-zone').addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();startDeposit();}});
+let draggedObject=null;
+document.querySelectorAll('[data-object]').forEach(button=>{
+  button.addEventListener('click',()=>{if(busy)return;$('item').value=button.dataset.object;showItem();});
+  button.addEventListener('dragstart',event=>{
+    if(busy){event.preventDefault();return;}
+    draggedObject=button.dataset.object;event.dataTransfer.setData('text/plain',draggedObject);event.dataTransfer.effectAllowed='move';
+    if(connected&&!$('offline').checked&&!isFull(draggedObject))$('drop-zone').classList.add('dragging');
+  });
+  button.addEventListener('dragend',()=>{draggedObject=null;$('drop-zone').classList.remove('dragging');});
 });
-$('new-item').addEventListener('click', () => {resetJourney(); $('item').focus();});
+$('drop-zone').addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect=busy?'none':'move';});
+$('drop-zone').addEventListener('dragleave',()=> $('drop-zone').classList.remove('dragging'));
+$('drop-zone').addEventListener('drop',event=>{
+  event.preventDefault();$('drop-zone').classList.remove('dragging');
+  const value=draggedObject||event.dataTransfer.getData('text/plain');draggedObject=null;
+  if(busy || !Object.hasOwn(items,value))return;
+  $('item').value=value;showItem();startDeposit();
+});
+// Pointer fallback for browsers that do not start native HTML dragging on a button.
+let pointerDrag=null;
+document.querySelectorAll('[data-object]').forEach(button=>button.addEventListener('pointerdown',event=>{
+  if(event.pointerType==='touch'||event.button!==0||busy)return;
+  pointerDrag={value:button.dataset.object,x:event.clientX,y:event.clientY,moved:false};
+}));
+document.addEventListener('pointermove',event=>{
+  if(!pointerDrag)return;
+  if(Math.hypot(event.clientX-pointerDrag.x,event.clientY-pointerDrag.y)>12)pointerDrag.moved=true;
+  if(pointerDrag.moved){const target=document.elementFromPoint(event.clientX,event.clientY);$('drop-zone').classList.toggle('dragging',Boolean(target?.closest('#drop-zone')));}
+});
+document.addEventListener('pointerup',event=>{
+  const candidate=pointerDrag;pointerDrag=null;$('drop-zone').classList.remove('dragging');
+  if(!candidate?.moved||busy)return;
+  const target=document.elementFromPoint(event.clientX,event.clientY);
+  if(target?.closest('#drop-zone')){$('item').value=candidate.value;showItem();startDeposit();}
+});
+document.addEventListener('pointercancel',()=>{pointerDrag=null;});
+document.addEventListener('dragstart',()=>{pointerDrag=null;});
+$('new-item').addEventListener('click',()=>{resetJourney();$('item').focus();});
 $('item').addEventListener('change',showItem);
-$('reset').addEventListener('click', () => {
-  points = 0; savePoints(); resetJourney(); $('redeem-status').textContent = '';
-  $('wallet-receipt').textContent = 'Portefeuille fictif remis à zéro.';
+function resetDemo(all=false) {
+  points=0;deposits=0;savePoints();resetJourney();$('redeem-status').textContent='';$('wallet-receipt').textContent='Portefeuille fictif remis à zéro.';
+  if(all) {
+    connected=false;$('connect').textContent='Simuler la connexion à ECO-001';$('session-status').textContent='Aucune session active.';
+    $('offline').checked=false;Object.keys(levels).forEach(key=>levels[key]=45);$('fill-level').value=45;$('item').value='mix';showItem();updateStation();
+  }
+}
+$('reset').addEventListener('click',()=>resetDemo());$('restart-demo').addEventListener('click',()=>resetDemo(true));
+$('redeem').addEventListener('click',()=>{
+  if(points<20){$('redeem-status').textContent='Solde insuffisant : il faut 20 points fictifs. Aucun point retiré.';return;}
+  points-=20;savePoints();$('redeem-status').textContent='Échange simulé : 20 points retirés du solde local. Aucun bon ni cadeau réel créé.';
 });
-$('redeem').addEventListener('click', () => {
-  if(points < 20) { $('redeem-status').textContent = 'Solde insuffisant : il faut 20 points fictifs. Aucun point n’a été retiré.'; return; }
-  points -= 20; savePoints();
-  $('redeem-status').textContent = 'Échange simulé : 20 points retirés du solde local. Aucun cadeau, code, avantage ou bon réel n’a été créé.';
-});
-$('item').value = 'mix';
-renderPoints(); showItem();
+$('item').value='mix';renderPoints();showItem();
 const questions = [
   { q:'Quel réflexe préserve les ressources le plus en amont ?', a:['Réduire les achats et les déchets','Recycler chaque objet après usage','Remplacer plus souvent ses objets'], correct:0, explanation:'Réduire évite de mobiliser des ressources dès le départ. Le réemploi et la réparation viennent ensuite, avant le recyclage.' },
   { q:'Un gobelet qui ressemble à du papier va-t-il toujours dans le bac papier ?', a:['Oui, son apparence suffit','Non, il faut vérifier son revêtement et les consignes','Oui, s’il contient du café'], correct:1, explanation:'Certains gobelets sont composites. L’apparence ne suffit pas à déterminer la filière : consultez les consignes locales.' },
@@ -129,11 +207,29 @@ if('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: red
 }
 
 function updateStation() {
-  const fill = Number($('fill-level').value), offline = $('offline').checked;
-  $('fill-value').textContent = `${fill} %`; $('fill-meter').value = fill;
-  $('fill-meter').textContent = `${fill} %`;
-  $('fill-status').textContent = fill >= 100 ? 'Simulation : bac plein. Orienter vers un autre point de collecte autorisé et prévenir l’équipe ; ne pas laisser de déchets au sol.' : fill >= 85 ? 'Simulation : seuil de collecte atteint (85 % choisi pour cette démo). Une intervention serait à planifier ; aucune alerte réelle n’est envoyée.' : fill >= 70 ? 'Simulation : niveau à surveiller. Anticiper la tournée selon les contraintes du lieu.' : 'Simulation : capacité disponible. Le niveau ne renseigne pas sur la qualité du tri.';
-  $('offline-status').textContent = offline ? 'Mode hors ligne simulé : le dépôt de cette démo est suspendu et aucun point n’est transféré. Un vrai tri local avec synchronisation différée reste à concevoir.' : 'Connexion simulée disponible : la session et le crédit fictif peuvent reprendre. Aucune connexion réelle à une station.';
+  const fill=levels[$('fill-bin').value],offline=$('offline').checked;
+  $('fill-level').value=fill;$('fill-value').textContent=`${fill} %`;$('fill-meter').value=fill;$('fill-meter').textContent=`${fill} %`;
+  for(const key of Object.keys(levels)){$('level-'+key).textContent=`${levels[key]} %`;$('meter-'+key).value=levels[key];}
+  $('fill-status').textContent=fill>=100?'Simulation : bac plein. Ne pas déposer dans cette filière.':fill>=85?'Simulation : seuil de collecte atteint (85 % fictif).':fill>=70?'Simulation : niveau à surveiller.':'Simulation : capacité disponible. Le niveau ne prouve pas la qualité du tri.';
+  $('offline-status').textContent=offline?'Mode hors ligne simulé : dépôt suspendu, aucun crédit transféré.':'Connexion simulée disponible : aucune liaison à une vraie station.';
+  if(busy && (offline||isFull())){resetJourney();$('sort-feedback').textContent='Opération annulée avant validation : aucun EcoPoint crédité.';}
   updateAvailability();
 }
-$('fill-level').addEventListener('input',updateStation); $('offline').addEventListener('change',updateStation); updateStation();
+$('fill-level').addEventListener('input',()=>{levels[$('fill-bin').value]=Number($('fill-level').value);updateStation();});
+$('fill-bin').addEventListener('change',updateStation);$('offline').addEventListener('change',updateStation);updateStation();
+const viewCaptions={exterior:'Extérieur : ouverture commune, affichage de session fictive et accès maintenance. Aucun équipement fabriqué.',cutaway:'Coupe : trajet de l’objet vers les trois bacs internes et zone de contrôle pour les objets incertains.',mechanism:'Mécanisme : isolement → caméra et éclairage envisagés → décision → aiguillage motorisé. Ensemble à développer et tester.'};
+document.querySelectorAll('[data-view]').forEach(button=>{if(button.tagName!=='BUTTON')return;button.addEventListener('click',()=>{
+  document.querySelector('.machine-shell').dataset.view=button.dataset.view;
+  document.querySelectorAll('button[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  $('blueprint-caption').textContent=viewCaptions[button.dataset.view];
+  document.querySelector('.automatic-station').setAttribute('aria-label','ÉcoNova — '+viewCaptions[button.dataset.view]);
+});});
+const details={isolation:'Séparation : présenter les objets un par un sur un convoyeur envisagé. Un dépôt mélangé nécessite une séparation mécanique encore non démontrée.',sensor:'Caméra et éclairage internes : observer les objets, pas les passants. Une image seule ne certifie pas tous les matériaux ; capteurs et précision à valider.',routing:'Aiguillage motorisé envisagé : diriger une matière reconnue vers son bac ; isoler les inconnus pour contrôle plutôt que contaminer une filière.',maintenance:'Capteurs de remplissage envisagés et porte verrouillable réservée à la collecte. Nettoyage, sécurité et accès technique à prototyper.'};
+document.querySelectorAll('[data-detail]').forEach(button=>button.addEventListener('click',()=>{$('blueprint-detail').textContent=details[button.dataset.detail];document.querySelectorAll('[data-detail]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));}));
+let blueprintTimer;
+$('blueprint-play').addEventListener('click',()=>{
+  document.querySelector('button[data-view="mechanism"]').click();const shell=document.querySelector('.machine-shell');
+  clearTimeout(blueprintTimer);shell.classList.remove('trace-path');void shell.offsetWidth;shell.classList.add('trace-path');
+  $('blueprint-caption').textContent='Trajet conceptuel : dépôt commun → isolement → scan → aiguillage → bac ou contrôle. Aucun mécanisme réel.';
+  blueprintTimer=setTimeout(()=>shell.classList.remove('trace-path'),reducedMotion()?50:2400);
+});
