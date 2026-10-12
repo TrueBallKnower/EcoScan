@@ -41,7 +41,7 @@ Le contrat d’échange est synchrone et local, sans serveur. Un identifiant de 
 
 ## Confirmation et accessibilité
 
-Le bouton d’un produit ouvre son détail et une confirmation native `dialog`. Le solde après échange est expliqué avant le débit. Annuler, fermer ou appuyer sur Échap ne retire aucun point. Un solde insuffisant ou un dépôt en cours désactive la confirmation. Le catalogue est lisible sans JavaScript ; seule la simulation d’échange en dépend.
+Le bouton d’un produit ouvre son détail et une confirmation native `dialog`. Le solde après échange est expliqué avant le débit. Annuler, fermer ou appuyer sur Échap ne retire aucun point. Un solde insuffisant ou un dépôt en cours désactive la confirmation. Si le solde ne suffit pas, une action ferme la fiche puis mène directement au dépôt fictif existant ; elle ne crée aucun point. Le portefeuille vide propose aussi ce premier essai. La fiche s’ouvre en haut, avec le focus sur le nom du concept et une fermeture accessible de 44 pixels. Le catalogue est lisible sans JavaScript ; seule la simulation d’échange en dépend.
 
 Les onglets ont les rôles `tablist`, `tab` et `tabpanel`, ainsi qu’une navigation par flèches, Début et Fin. Les actions font au moins 44 pixels. Les filtres annoncent le nombre de résultats ; les messages de session, solde et échange utilisent des régions de statut. Les entrées d’écran respectent `prefers-reduced-motion`.
 

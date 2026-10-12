@@ -53,6 +53,7 @@
     connect.disabled = state.busy || (state.offline && !state.connected);
     connect.dataset.command = state.connected ? 'end-session' : 'connect-station';
     put('eco-app-wallet-note', state.busy ? 'Le tri est en cours. Le solde changera après validation.' : state.phase === 'confirmed' ? `Dernier dépôt : +${state.earned} points fictifs après validation.` : state.phase === 'rejected' ? 'Objet à contrôler : aucun point ajouté.' : 'Un seul solde, partagé avec la simulation du site.');
+    document.getElementById('eco-app-start-deposit').hidden=state.points>0;
     if (selectedProduct && !pendingExchange && !offerCompleted) renderOffer();
   }
 
@@ -108,6 +109,7 @@
     const affordable = state.points >= product.cost;
     confirmButton.disabled = !affordable || state.busy;
     confirmButton.textContent = `Confirmer l’échange fictif · ${product.cost} points`;
+    document.getElementById('eco-shop-try-deposit').hidden=affordable||state.busy;
     put('eco-shop-confirm-status', state.busy ? 'Le dépôt est en cours. Attendez sa validation avant un échange.' : affordable ? `Après confirmation, votre solde local passerait de ${state.points} à ${state.points - product.cost} points. Aucun produit ne sera commandé.` : `Votre solde est de ${state.points} points. Il manque ${product.cost - state.points} points pour simuler cet échange. Aucun point ne sera retiré.`);
     document.getElementById('eco-shop-result').hidden = true;
     document.getElementById('eco-shop-offer').hidden = false;
@@ -120,7 +122,8 @@
     renderOffer();
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
-    document.getElementById('eco-shop-cancel').focus();
+    dialog.scrollTop=0;
+    document.getElementById('eco-shop-product-name').focus({preventScroll:true});
   }
   shop.querySelectorAll('[data-shop-detail]').forEach(button => button.addEventListener('click', () => openProduct(button.dataset.shopDetail)));
 
@@ -132,6 +135,8 @@
     offerCompleted = false;
   }
   document.getElementById('eco-shop-cancel').addEventListener('click', closeDialog);
+  document.getElementById('eco-shop-close').addEventListener('click', closeDialog);
+  document.getElementById('eco-shop-try-deposit').addEventListener('click',closeDialog);
   document.getElementById('eco-shop-done').addEventListener('click', closeDialog);
   dialog.addEventListener('cancel', event => { if (pendingExchange) event.preventDefault(); });
   dialog.addEventListener('click', event => { if (event.target === dialog && !pendingExchange) closeDialog(); });

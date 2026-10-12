@@ -45,9 +45,9 @@ Vous pouvez demander à Codex : « Modifie EcoScan pour …, teste sur mobile et
 
 ## Parcours, app et boutique
 
-La navigation présente cinq parcours : **Découvrir, Essayer, Construire, Mission et Ressources**. Le JavaScript affiche un groupe de sections à la fois ; les anciennes ancres et le précédent/suivant fonctionnent toujours. Les contenus restent tous lisibles sans JavaScript. Pour ajouter une section, donner à son élément `<section>` un `data-view-group` parmi `discover`, `try`, `build`, `mission` et `resources`, puis adapter les raccourcis dans `experience-navigation.js` si nécessaire. Changer de parcours conserve le DOM, la session et le portefeuille ; quitter le film le met en pause. Les transitions courtes respectent la réduction des mouvements.
+La navigation présente cinq parcours : **Découvrir, Essayer, Construire, Mission et Ressources**. Le JavaScript affiche un groupe de sections à la fois ; les anciennes ancres et le précédent/suivant fonctionnent toujours. Les contenus restent tous lisibles sans JavaScript. Pour ajouter une section, donner à son élément `<section>` un `data-view-group` parmi `discover`, `try`, `build`, `mission` et `resources`, puis adapter les raccourcis dans `experience-navigation.js` si nécessaire. Changer de parcours conserve le DOM, la session et le portefeuille ; quitter le film le met en pause. Les transitions courtes respectent la réduction des mouvements. Sur mobile, le bouton de navigation indique le parcours actuel.
 
-L’app dans `#app` est un prototype intégré à la page : Parcours, Portefeuille et Boutique. Elle partage la session et le solde central de `script.js`, sans caméra, géolocalisation, compte ni installation. `#boutique` explore quatre concepts utiles à 20/30/40/60 points fictifs. Choisir un produit ouvre une confirmation ; annuler ne débite rien. La confirmation vérifie le produit, son montant, le solde et l’absence de dépôt en cours ; un même événement ne débite qu’une fois. Il n’existe aucune commande, réservation, livraison ou produit disponible.
+L’app dans `#app` est un prototype intégré à la page : Parcours, Portefeuille et Boutique. Elle partage la session et le solde central de `script.js`, sans caméra, géolocalisation, compte ni installation. `#boutique` explore quatre concepts utiles à 20/30/40/60 points fictifs. Choisir un produit ouvre sa fiche en haut, puis une confirmation ; annuler ne débite rien. Un portefeuille vide et un solde insuffisant proposent directement le dépôt fictif existant, sans ajouter de points. La confirmation vérifie le produit, son montant, le solde et l’absence de dépôt en cours ; un même événement ne débite qu’une fois. Il n’existe aucune commande, réservation, livraison ou produit disponible.
 
 Seul le solde survit au rechargement. Le dernier échange et le registre de demandes appartiennent à la visite ; remettre les points à zéro les efface et ferme la confirmation. Les descriptions de matières recyclées sont des intentions à valider. Réemploi et réparation restent prioritaires. Les contrats sont documentés dans `docs/BOUTIQUE_APP.md` et la suite dans `docs/ROADMAP.md`.
 
@@ -107,6 +107,7 @@ node tests/media.cjs
 node tests/experience.cjs
 node tests/workspace.cjs
 node tests/shop.cjs
+node tests/ergonomics.cjs
 ```
 
 Pour vérifier le chemin de publication, servir le parent du dépôt puis cibler `/EcoScan` :

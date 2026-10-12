@@ -10,5 +10,6 @@
 .workspace-transition { animation:workspace-enter .18s ease-out both; }
 @keyframes workspace-enter { from { opacity:.7; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 @media(max-width:1050px) { .workspace-guide { align-items:flex-start; flex-direction:column; gap:14px; }.workspace-guide #workspace-shortcuts { justify-content:flex-start; } }
-@media(max-width:700px) { .workspace-guide { width:88%; margin:18px auto; padding:17px; border-radius:15px; }#workspace-shortcuts { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }#workspace-shortcuts a { font-size:.72rem; justify-content:center; padding:9px; text-align:center; } }
+@media(max-width:700px) { .workspace-guide { width:88%; margin:18px auto; padding:17px; border-radius:15px; }#workspace-shortcuts { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }#workspace-shortcuts a { font-size:.72rem; justify-content:center; padding:9px; text-align:center; }#menu-button { font-size:.76rem; padding:6px 12px; } }
+@media(max-width:380px) { header .product-brand img { width:160px; } }
 @media(prefers-reduced-motion:reduce) { .workspace-transition { animation:none; }#workspace-shortcuts a { transition:none; } }

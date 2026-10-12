@@ -36,6 +36,11 @@
 .eco-app-balance small { font-size:.65rem; letter-spacing:.08em; }
 .eco-app-balance strong { display:block; color:#e8f4de; font-size:clamp(3rem,8vw,4.3rem); font-weight:600; letter-spacing:-.06em; line-height:1.2; overflow-wrap:anywhere; margin:10px 0; }
 .eco-app-balance p { color:#c3d7b7; font-size:.68rem; margin:0; }
+.eco-app-link.eco-app-primary { background:#0c4a39; color:#f2f8ea; border-color:#0c4a39; text-decoration:none; }
+.eco-app-link.eco-app-primary:hover { background:#075b44; color:#f2f8ea; }
+.eco-shop-close { position:absolute; top:10px; right:10px; display:grid; place-items:center; min-width:44px; min-height:44px; padding:0; border:1px solid #bacdb1; border-radius:50%; color:#173d2e; background:#f4f8ee; font-size:1.55rem; }
+#eco-shop-product-name { padding-right:38px; }
+#eco-shop-try-deposit { margin:15px 0; }
 .eco-app-log { padding:17px 0; margin:17px 0; border-top:1px solid #d4dfcb; border-bottom:1px solid #d4dfcb; }
 .eco-app-log strong { display:block; font-size:.78rem; }
 .eco-app-log p { font-size:.73rem; margin:8px 0 0; }

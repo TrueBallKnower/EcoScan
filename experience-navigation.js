@@ -74,6 +74,9 @@
       link.classList.toggle('current-section',current);
       if(current)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
     });
+    const menu=document.getElementById('menu-button');
+    const activeLabel=navigation.find(link=>link.dataset.navGroup===active)?.textContent.trim()||definitions[active].label;
+    if(menu){menu.textContent=activeLabel+' ⌄';menu.setAttribute('aria-label','Changer de parcours, actuel : '+activeLabel);}
     updateGuide();
     clearTimeout(transitionTimer);main.classList.remove('workspace-transition');
     if(changed&&!initial&&!reduced()){
