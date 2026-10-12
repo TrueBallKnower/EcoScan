@@ -1,79 +1,79 @@
 WEBVTT
 
-00:00:00.000 --> 00:00:04.000
-Une mise en scène 3D de l’architecture ÉcoNova envisagée.
+00:00:00.240 --> 00:00:02.324
+Un seul geste. Un nouveau cycle.
 
-00:00:04.000 --> 00:00:08.000
-Un geste simple à l’extérieur. Des flux séparés à l’intérieur.
+00:00:02.404 --> 00:00:06.685
+Imaginez ÉcoNova, la station qui veut rendre le recyclage évident.
 
-00:00:08.000 --> 00:00:11.500
-Le QR code identifie la station que vous souhaitez utiliser.
+00:00:08.240 --> 00:00:10.367
+Scannez le QR code de la station.
 
-00:00:11.500 --> 00:00:15.000
-Une future app confirmerait une session et votre présence.
+00:00:10.447 --> 00:00:14.557
+Votre future application ouvrirait une session confirmée sur place.
 
-00:00:15.000 --> 00:00:18.000
-Le QR seul ne confirme ni la présence ni le dépôt.
+00:00:14.637 --> 00:00:16.977
+Le dépôt, lui, sera vérifié ensuite.
 
-00:00:18.000 --> 00:00:22.000
-Vous déposez les recyclables acceptés dans une seule ouverture.
+00:00:18.240 --> 00:00:22.692
+Bouteille, canette : les recyclables acceptés entrent dans une seule ouverture.
 
-00:00:22.000 --> 00:00:25.000
-Les matières admises dépendent des filières locales.
+00:00:22.772 --> 00:00:25.155
+Les consignes s’adaptent aux filières locales.
 
-00:00:25.000 --> 00:00:28.000
-Les liquides, sacs fermés et déchets dangereux sont exclus du pilote.
+00:00:25.235 --> 00:00:27.063
+Sans liquides ni déchets dangereux.
 
-00:00:28.000 --> 00:00:32.000
-La première étape consiste à présenter les objets un par un.
+00:00:28.240 --> 00:00:31.007
+À l’intérieur, les objets avanceraient un par un.
 
-00:00:32.000 --> 00:00:35.500
-Un mécanisme de séparation devra gérer les mélanges et imbrications.
+00:00:31.087 --> 00:00:36.904
+Un séparateur doit gérer les mélanges, repérer les blocages et présenter chaque objet correctement.
 
-00:00:35.500 --> 00:00:39.000
-Des contrôles détecteraient les obstructions avant de poursuivre.
+00:00:39.240 --> 00:00:42.391
+Les capteurs observeraient l’objet dans une zone éclairée.
 
-00:00:39.000 --> 00:00:42.500
-Une zone éclairée présente l’objet devant les capteurs.
+00:00:42.471 --> 00:00:45.429
+Plusieurs mesures aideraient à identifier la matière.
 
-00:00:42.500 --> 00:00:46.000
-Vision et autres mesures pourraient aider à identifier la matière.
+00:00:45.509 --> 00:00:47.956
+Un doute ? La station choisit le contrôle.
 
-00:00:46.000 --> 00:00:50.000
-Un résultat incertain reste à l’écart des filières recyclables.
+00:00:50.100 --> 00:00:52.483
+La plaque dirige le PET à gauche.
 
-00:00:50.000 --> 00:00:53.000
-Le mécanisme motorisé oriente un objet reconnu vers son bac.
+00:00:53.100 --> 00:00:56.000
+La trappe s’ouvre : l’aluminium descend au centre.
 
-00:00:53.000 --> 00:00:56.000
-PET, aluminium et papier restent séparés.
+00:00:56.100 --> 00:00:58.248
+À droite, la plaque dirige le papier.
 
-00:00:56.000 --> 00:00:59.000
-Un contrôle de passage confirmerait le routage réel.
+00:00:59.100 --> 00:01:01.888
+Un clapet séparé isole les objets incertains.
 
-00:00:59.000 --> 00:01:02.000
-Un objet inconnu ou composite suit la voie de vérification.
+00:01:02.240 --> 00:01:05.156
+Le passage confirmé déclencherait vos EcoPoints.
 
-00:01:02.000 --> 00:01:05.500
-Les EcoPoints ne seraient crédités qu’après validation du dépôt.
+00:01:05.236 --> 00:01:06.851
+Un dépôt, une validation.
 
-00:01:05.500 --> 00:01:09.000
-Un événement unique empêcherait les doubles crédits.
+00:01:06.931 --> 00:01:10.636
+Les points rejoindraient votre portefeuille ; ici, ils restent fictifs.
 
-00:01:09.000 --> 00:01:12.000
-Le portefeuille et les points montrés ici sont fictifs.
+00:01:12.240 --> 00:01:14.516
+Les matières se collecteraient séparément.
 
-00:01:12.000 --> 00:01:15.500
-La collecte conserverait les matières séparées.
+00:01:14.596 --> 00:01:18.707
+Des modules accessibles faciliteraient le nettoyage et la réparation.
 
-00:01:15.500 --> 00:01:19.000
-Des modules accessibles faciliteraient nettoyage et réparation.
+00:01:18.787 --> 00:01:22.129
+Un pilote mesurera tri, énergie, coût et disponibilité.
 
-00:01:19.000 --> 00:01:23.000
-Un pilote doit mesurer qualité du tri, énergie, coût et disponibilité.
+00:01:23.240 --> 00:01:25.717
+ÉcoNova est un concept à prototyper.
 
-00:01:23.000 --> 00:01:27.500
-ÉcoNova est un concept à prototyper, pas une machine déjà fabriquée.
+00:01:25.797 --> 00:01:28.824
+Notre mission : simplifier le tri, prouver l’impact.
 
-00:01:27.500 --> 00:01:32.000
-Le prochain pas : un terrain pilote et des résultats vérifiables.
+00:01:28.904 --> 00:01:32.000
+Prochain pas : un pilote, des résultats vérifiables.

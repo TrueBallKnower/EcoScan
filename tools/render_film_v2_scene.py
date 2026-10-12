@@ -12,7 +12,7 @@ W,H=1280,720
 bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False)
 scene=bpy.context.scene
 scene.render.engine='BLENDER_EEVEE_NEXT'
-scene.eevee.taa_render_samples=16
+scene.eevee.taa_render_samples=32
 scene.render.resolution_x=W;scene.render.resolution_y=H;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG'
 scene.view_settings.view_transform='AgX';scene.view_settings.look='AgX - Medium High Contrast'
@@ -32,7 +32,7 @@ BLUE=material('PET internal liner',(.13,.33,.38),.25,.35)
 GOLD=material('Paper internal liner',(.45,.32,.12),.1,.45)
 AMBER=material('Inspection zone',(.54,.27,.08),.1,.5)
 GROUND=material('Studio background',(.009,.026,.02),0,.5)
-objects=[];shell=[];external=[];internal=[];qrparts=[]
+objects=[];shell=[];external=[];internal=[];qrparts=[];moving=[]
 def cube(name,loc,scale,mat,bevel=.03,group=None):
  bpy.ops.mesh.primitive_cube_add(size=1,location=loc);o=bpy.context.object;o.name=name;o.dimensions=scale
  bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
@@ -94,29 +94,46 @@ for x in [-.32,.32]:cube('Tray side wing',(x,-.04,1.43),(.38,.64,.035),STEEL,.01
 cube('Tray back',(0,.19,1.43),(.29,.18,.035),STEEL,.012,internal)
 cube('Presentation throat front lip',(0,-.28,1.43),(.29,.035,.04),STEEL,.012,internal)
 for x in [-.51,.51]:cube('Tray rail',(x,-.04,1.47),(.025,.63,.085),STEEL,.008,internal)
-cube('Singulation belt',(-.12,.035,1.25),(.63,.45,.055),BLACK,.015,internal)
-for i in range(9):cyl('Belt rollers',(-.43+i*.078,.035,1.25),.025,.42,STEEL,'Y',internal)
-for y in [-.19,.27]:cube('Belt edge',(-.12,y,1.29),(.7,.025,.08),STEEL,.008,internal)
-# Offset separator gate: architecture is a visual principle to prototype.
-cube('Singulator guide',(-.02,.10,1.33),(.03,.25,.12),GREEN,.014,internal)
-cube('Sensor tunnel',(0,.10,1.09),(.68,.39,.042),BLACK,.015,internal)
+# The conveyor stops beside the reading window; the route below remains open.
+cube('Singulation belt',(-.29,.045,1.25),(.43,.34,.055),BLACK,.015,internal)
+for i in range(6):cyl('Belt rollers',(-.48+i*.078,.045,1.25),.025,.31,STEEL,'Y',internal)
+for y in [-.14,.23]:cube('Belt edge',(-.29,y,1.29),(.48,.025,.08),STEEL,.008,internal)
+cube('Singulator guide',(-.16,.10,1.33),(.025,.20,.12),GREEN,.014,internal)
+# A clear central reading/drop window, rather than a solid block through which objects pass.
+for x in [-.245,.245]:cube('Sensor window shoulder',(x,.06,1.09),(.145,.30,.025),BLACK,.01,internal)
 for x in [-.32,.32]:cube('Camera arch support',(x,.10,1.2),(.022,.39,.22),STEEL,.008,internal)
 line('Sensor top lamp',(-.29,-.08,1.32),(.29,-.08,1.32),.008,MINT,internal)
 cyl('Optical sensor',(0,.115,1.31),.045,.036,BLACK,'Z',internal)
 cyl('Sensor lens',(0,.115,1.289),.022,.009,BLUE,'Z',internal)
-# Tilting diverter with three routes plus quarantine behind; actual mechanism would require validation.
-cube('Transfer drop',(0,.04,.98),(.28,.30,.045),STEEL,.025,internal)
-cyl('Servo hub',(0,.17,.86),.085,.12,BLACK,'Y',internal)
-cube('Rotating chute',(0,-.035,.86),(.47,.40,.045),STEEL,.015,internal).rotation_euler.y=math.radians(-18)
+# Canonical articulated routing assembly. A broad selector tilts toward PET/paper;
+# its central trap opens for aluminium. An upstream flap sends uncertainties rearward.
+# Dimensions express a visual principle only, not verified engineering clearances.
+SELECTOR_PIVOT=(0,-.03,.90)
+TRAP_PIVOT=(-.10,-.03,.90)
+REJECT_PIVOT=(0,-.18,1.04)
+for x in [-.275,.275]:cube('Tilting selector wing',(x,-.03,.90),(.35,.30,.026),STEEL,.012,moving)
+cube('Central aluminium trap',(0,-.03,.90),(.20,.30,.026),STEEL,.01,moving)
+for ya,yb in [(-.235,-.195),(.13,.19)]:line('Selector hinge stub',(0,ya,.90),(0,yb,.90),.017,STEEL,internal)
+for y in [-.195,.135]:cube('Selector end frame',(0,y,.90),(.90,.025,.026),STEEL,.01,moving)
+for y in [-.22,.17]:cyl('Selector bearing',(0,y,.90),.038,.028,BLACK,'Y',internal)
+cube('Selector servo casing',(.14,.23,.92),(.13,.10,.105),BLACK,.018,internal)
+# Gate is parked vertically at the front of the reading window in the neutral view.
+reject=cube('Rear verification flap',(0,-.18,1.285),(.23,.49,.024),STEEL,.011,moving)
+reject.rotation_euler.x=math.pi/2
+line('Rear flap hinge',(-.14,-.18,1.04),(.14,-.18,1.04),.012,STEEL,internal)
+cyl('Rear flap motor',(.16,-.18,1.04),.036,.04,BLACK,'X',internal)
 for x,col in [(-.40,BLUE),(0,STEEL),(.40,GOLD)]:
- # Open containers: bottom + four thin walls; fronts short for visible empty volume.
  cube('Compartment bottom',(x,0,.225),(.34,.55,.035),col,.014,internal)
  cube('Compartment back',(x,.25,.44),(.34,.024,.43),col,.009,internal)
  for xx in [-.158,.158]:cube('Compartment side',(x+xx,0,.44),(.024,.55,.43),col,.009,internal)
  cube('Compartment front',(x,-.25,.40),(.34,.024,.35),col,.009,internal)
  label('Compartment category',{-0.4:'PET',0:'ALU',0.4:'PAPIER'}[x],(x,-.267,.405),.032,IVORY,internal)
-# Inspection tray is explicitly visible off to the back, never merges with a recyclable stream.
-cube('Inspection tray',(0,.27,.765),(.38,.19,.18),AMBER,.019,internal)
+# Open isolated verification tray, including a lower entrance lip for the rejection ramp.
+cube('Verification tray floor',(0,.28,.715),(.38,.25,.024),AMBER,.01,internal)
+cube('Verification tray rear',(0,.393,.785),(.38,.024,.164),AMBER,.009,internal)
+for x in [-.18,.18]:cube('Verification tray side',(x,.28,.785),(.024,.25,.164),AMBER,.009,internal)
+cube('Verification entry lip',(0,.16,.753),(.38,.024,.076),AMBER,.009,internal)
+label('Verification tray category','CONTROLE',(0,.146,.754),.024,IVORY,internal)
 # Structural upright rails and removable electronics box.
 for x in [-.56,.56]:cube('Internal rail',(x,.28,.94),(.027,.027,1.65),STEEL,.008,internal)
 cube('Control box',(.48,.23,1.48),(.12,.19,.31),BLACK,.012,internal)
@@ -130,7 +147,7 @@ for name,loc,power,size,color in [
  bpy.ops.object.light_add(type='AREA',location=loc);o=bpy.context.object;o.name=name;o.data.energy=power;o.data.shape='DISK';o.data.size=size;o.data.color=color;o.rotation_euler=(Vector((0,0,1))-o.location).to_track_quat('-Z','Y').to_euler()
 bpy.ops.object.camera_add();cam=bpy.context.object;scene.camera=cam;cam.data.lens=55
 from bpy_extras.object_utils import world_to_camera_view
-POINTS={'entry':(0,-.45,1.53),'tray':(-.15,-.1,1.45),'separator':(-.27,.0,1.26),'sensor':(0,-.1,1.16),'diverter':(0,-.05,.86),'pet':(-.4,-.08,.55),'alu':(0,-.08,.55),'paper':(.4,-.08,.55),'hold':(0,.27,.84),'qr':(.36,-.46,1.05)}
+POINTS={'entry':(0,-.45,1.53),'tray':(-.15,-.1,1.45),'separator':(-.27,.0,1.26),'sensor':(0,-.1,1.16),'diverter':(0,-.03,.90),'pet':(-.4,-.08,.55),'alu':(0,-.08,.55),'paper':(.4,-.08,.55),'hold':(0,.28,.80),'qr':(.36,-.46,1.05)}
 SHOTS=[
  ('hero',(3.3,-5,2.8),(-.50,0,1.01),55,False),
  ('connection',(2.65,-4.8,2.3),(-.49,0,1.05),55,False),
@@ -141,13 +158,18 @@ SHOTS=[
  ('routing',(2.6,-4.4,2.3),(-.67,0,.86),62,True),
  ('service',(3.7,-5.4,2.9),(-.44,0,1),55,True),
  ('final',(2.85,-5.6,2.4),(-.50,0,1.02),55,False),
+ ('model-exterior',(2.65,-4.6,2.60),(0,0,.97),55,False),
+ ('model-cutaway',(2.65,-4.6,2.60),(0,0,.97),55,True),
 ]
+bpy.ops.wm.save_as_mainfile(filepath=str(CACHE/'econova-canonical.blend'))
 meta={}
 existing=json.loads((CACHE/'plates.json').read_text()) if (CACHE/'plates.json').exists() else {}
 for name,location,target,lens,cut in SHOTS:
- if '--reuse' in sys.argv and (CACHE/(name+'.png')).exists() and name in existing and existing[name]['target']==list(target):
+ if '--reuse' in sys.argv and (CACHE/(name+'.png')).exists() and name in existing and existing[name]['target']==list(target) and existing[name].get('model')=='compact-articulated-v3':
   meta[name]=existing[name];continue
  for o in external:o.hide_render=cut
+ # Dynamic film frames draw the articulated plates in the exact camera projection.
+ for o in moving:o.hide_render=name=='routing'
  # Side panel is removed for a genuine cutaway view; cabinet rear remains for coherence.
  for o in shell:o.hide_render=cut and o.name.startswith(('Right exterior','Top','Left exterior'))
  cam.location=location;cam.rotation_euler=(Vector(target)-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.lens=lens
@@ -157,7 +179,7 @@ for name,location,target,lens,cut in SHOTS:
  projected={}
  for key,point in POINTS.items():
   p=world_to_camera_view(scene,cam,Vector(point));projected[key]=[p.x*W,(1-p.y)*H]
- meta[name]={'points':projected,'camera':list(location),'target':list(target),'lens':lens}
+ meta[name]={'points':projected,'camera':list(location),'target':list(target),'lens':lens,'model':'compact-articulated-v3','routing':{'selector_pivot':SELECTOR_PIVOT,'trap_pivot':TRAP_PIVOT,'reject_pivot':REJECT_PIVOT}}
  bpy.ops.render.render(write_still=True)
  (CACHE/'plates.json').write_text(json.dumps(meta,indent=2))
 print('Original ÉcoNova plate production complete:',CACHE)

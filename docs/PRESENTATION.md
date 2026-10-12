@@ -12,7 +12,7 @@
 
 ## Ce qui est disponible aujourd’hui
 
-Un site gratuit en HTML/CSS/JavaScript, une identité originale, des études visuelles, un blueprint de principe, un film 3D de 92 secondes, une simulation interactive, un QR vers cette démo et des protocoles de test téléchargeables. Ces livrables expliquent le concept ; ils ne prouvent pas une machine fabriquée.
+Un site gratuit en HTML/CSS/JavaScript, une identité originale, des études visuelles, un blueprint de principe, un film 3D de 92 secondes avec voix française, sous-titres et plaques articulées animées, une simulation interactive, un QR vers cette démo et des protocoles de test téléchargeables. Le modèle compact est commun au film, aux trois vues et au blueprint ; la silhouette grand format est une étude distincte. Ces livrables expliquent le concept ; ils ne prouvent pas une machine fabriquée.
 
 Site : https://trueballknower.github.io/EcoScan/
 

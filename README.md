@@ -23,7 +23,7 @@ Sur votre propre ordinateur, consultez `http://localhost:8000`. Dans Codex, le s
 | `styles.css` | Styles des composants, responsive et animations |
 | `product.css` | Nouvelle direction visuelle : hero, simulation, laboratoire, marque |
 | `script.js` | Session fictive, objets, dépôt, points, quiz, niveaux, vidéo et calculateur |
-| `product.js` | Protocoles de test proposés, sélection et téléchargement Markdown |
+| `product.js` | Protocoles téléchargeables, reçu de dépôt et navigation active |
 | `assets/` | Logo, illustrations, blueprint, QR, films et sous-titres locaux |
 | `docs/` | Faisabilité, recherche, références, stratégie et transcriptions |
 | `tools/` | Serveur local et générateurs hors ligne des médias |
@@ -59,13 +59,15 @@ Le calculateur utilise `capacité = 60 / cycle_en_secondes * disponibilité`. Le
 
 L’identité originale est dans `logo-ecoscan.svg`, `logo-ecoscan-light.svg`, `ecoscan-symbol.svg` et `favicon.svg`. Le symbole associe feuille, boucle et repères de scan. La proposition de nom ÉcoNova n’a pas fait l’objet d’une vérification juridique de disponibilité.
 
-`econova-studio.webp` sert de couverture. `econova-blueprint-v2.svg`, `.png` et `.webp` présentent une architecture de principe avec séparation, capteurs, aiguillage, trois filières, contrôle isolé et collecte. Les rendus et le film explorent cette architecture ; aucune dimension, pièce construite, conformité ou performance n’est validée. Le QR représenté dans ces études est illustratif.
+`econova-compact-studio.webp` sert de couverture (1600 × 1200). Les vues `econova-compact-exterior.webp`, `econova-compact-cutaway.webp` et `econova-compact-mechanism.webp` reprennent le modèle Blender du film (1440 × 1080). Le blueprint `econova-blueprint-v2.svg`, `.png` et `.webp` décrit le même modèle compact : entrée haute, séparation, capteurs, plaques articulées vers PET/papier, trappe aluminium et contrôle isolé à l’arrière. Aucune dimension, pièce construite, conformité ou performance n’est validée. Le QR représenté dans ces études est illustratif.
+
+La première image large `econova-studio.webp` apparaît seulement dans « Explorer l’étude grand format » : une variante exploratoire distincte, sans dimensions ni débit validés.
 
 Le QR **réellement scannable** est `ecoscan-station-qr.svg`. Il ouvre `https://trueballknower.github.io/EcoScan/?station=ECO-001#demo`, puis demande une confirmation fictive. Il ne transfère aucun point entre appareils et ne prouve aucune présence ou dépôt. Pour changer l’URL, modifier `tools/generate_qr.py` et régénérer le SVG avec le paquet Python optionnel `qrcode==8.2`.
 
-Le nouveau film est `econova-film-v2.mp4` : **92 secondes**, 720p, H.264/AAC, modèle Blender original et trajet animé des matières, musique discrète originale, sans voix off. Les chapitres sont dans `econova-film-v2-chapters.json`, les captions dans `econova-film-v2-fr.vtt` et la transcription dans `docs/VIDEO_V2_TRANSCRIPTION.md`. La vidéo ne démarre pas automatiquement ; `preload="none"` évite de charger le film tant que le visiteur n’interagit pas. Choisir un chapitre autorise son chargement, sans lecture automatique.
+Le film est `econova-film-v2.mp4` : **92 secondes**, 720p, H.264/AAC, modèle Blender original et voix off française de synthèse (Kokoro / SIWIS), produite localement avec une ambiance originale qui baisse pendant les explications. Les plaques latérales, la trappe centrale, le volet de contrôle et leurs actionneurs bougent avant le passage des objets ; cette mise en scène n’est pas une validation mécanique. Les chapitres sont dans `econova-film-v2-chapters.json`, les captions dans `econova-film-v2-fr.vtt` et la transcription dans `docs/VIDEO_V2_TRANSCRIPTION.md`. La vidéo ne démarre pas automatiquement ; `preload="none"` évite de charger le film tant que le visiteur n’interagit pas. Choisir un chapitre autorise son chargement, sans lecture automatique.
 
-Les générateurs `render_film_v2.py` et `render_film_v2_scene.py` utilisent Blender, Python/Pillow et ffmpeg hors ligne. Ces outils ne sont **pas nécessaires pour modifier les textes ou publier le site**. Les médias historiques sont conservés sans être la présentation actuelle.
+Les générateurs `render_film_v2.py` et `render_film_v2_scene.py` utilisent Blender, Python/Pillow et ffmpeg hors ligne. `render_compact_model.py` reprend leur géométrie pour les vues du site. `generate_voiceover.py` produit la narration à partir de `narration_fr.json` ; les fichiers de modèle, l’installation optionnelle et leurs licences sont expliqués dans `docs/VOIX_OFF.md`. Aucune synthèse ne s’exécute lors de la visite du site. Ces outils ne sont **pas nécessaires pour modifier les textes ou publier le site**. Les médias historiques sont conservés sans être la présentation actuelle.
 
 ## Faisabilité et sources
 
@@ -92,6 +94,7 @@ node tests/upgrade.cjs
 node tests/vision.cjs
 node tests/product.cjs
 node tests/media.cjs
+node tests/experience.cjs
 ```
 
 Pour vérifier le chemin de publication, servir le parent du dépôt puis cibler `/EcoScan` :
@@ -100,6 +103,8 @@ Pour vérifier le chemin de publication, servir le parent du dépôt puis cibler
 python3 tools/serve_local.py --directory /workspace --port 8011
 ECOSCAN_TEST_URL=http://127.0.0.1:8011/EcoScan node tests/media.cjs
 ```
+
+La simulation affiche un reçu près de l’ouverture, issu du même solde que le téléphone. Le mélange est aiguillé un objet après l’autre ; annulation et réinitialisation masquent le reçu. Le bouton des plaques rejoint leur chapitre vidéo ; le repère actif suit aussi les commandes natives. Le menu mobile conserve des cibles de 44 px et une commande de retour en haut.
 
 Les suites couvrent parcours normal, crédit unique, annulations, objet incertain, échange, stockage bloqué, clavier, tactile, glisser-déposer, QR, calculateur, protocole téléchargé, vrais médias, recherche des chapitres, no-JS et plusieurs largeurs dès 360 px.
 

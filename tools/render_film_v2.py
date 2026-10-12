@@ -1,11 +1,14 @@
 """Original 92-second concept film: genuine 3D plates, spatial motion, original sound.
 Production dependencies: Pillow, NumPy, ffmpeg; no browser/site dependencies.
 First render plates with render_film_v2_scene.py. Then python tools/render_film_v2.py.
+For French narration, generate_voiceover.py creates a local WAV and timed JSON;
+pass them with --voice and --narration. --stage-only stages pictures while audio
+is produced; --mux-only adds that narration without re-encoding the pictures.
 No measured performance, working hardware or partner affiliation is represented.
 """
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import math, json, subprocess, wave, shutil
+import math, json, subprocess, wave, shutil, argparse
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1];CACHE=Path('/tmp/ecoscan-film-v2');OUT=ROOT/'assets'
 W,H,FPS,DURATION=1280,720,24,92
@@ -38,10 +41,10 @@ CUES=[
  (39,42.5,'Une zone éclairée présente l’objet devant les capteurs.'),
  (42.5,46,'Vision et autres mesures pourraient aider à identifier la matière.'),
  (46,50,'Un résultat incertain reste à l’écart des filières recyclables.'),
- (50,53,'Le mécanisme motorisé oriente un objet reconnu vers son bac.'),
- (53,56,'PET, aluminium et papier restent séparés.'),
- (56,59,'Un contrôle de passage confirmerait le routage réel.'),
- (59,62,'Un objet inconnu ou composite suit la voie de vérification.'),
+ (50,53,'La plaque s’incline et se stabilise avant de libérer le PET.'),
+ (53,56,'La trappe centrale s’ouvre pour l’aluminium.'),
+ (56,59,'La plaque bascule de l’autre côté pour le papier.'),
+ (59,62,'Un clapet distinct isole les objets incertains vers le contrôle.'),
  (62,65.5,'Les EcoPoints ne seraient crédités qu’après validation du dépôt.'),
  (65.5,69,'Un événement unique empêcherait les doubles crédits.'),
  (69,72,'Le portefeuille et les points montrés ici sont fictifs.'),
@@ -85,7 +88,7 @@ def cylinder_mesh(kind):
 meshes={k:cylinder_mesh(k) for k in ['PET','ALU']}
 def box_mesh(scale,base):
  sx,sy,sz=scale;v=[np.array([x*sx,y*sy,z*sz]) for z in [-1,1] for y in [-1,1] for x in [-1,1]]
- f=[[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]];return v,f,base
+ f=[[2,3,1,0],[5,7,6,4],[1,5,4,0],[6,7,3,2],[4,6,2,0],[3,7,5,1]];return v,f,base
 meshes['PAPIER']=box_mesh((.065,.044,.012),(.93,.86,.61));meshes['CONTRÔLE']=box_mesh((.042,.013,.055),(.92,.61,.28))
 
 def object3d(draw,name,kind,position,rotation=0,scale=1,fade=1):
@@ -106,6 +109,139 @@ def object3d(draw,name,kind,position,rotation=0,scale=1,fade=1):
  # Fine material contour adds a crisp manufactured glint.
  if kind=='PET':
   p=project(position,name);draw.ellipse((p[0]-2,p[1]-3,p[0]+2,p[1]+3),fill=rgba('#eeffef',200*fade))
+
+# The moving assembly uses the very same world coordinates and camera as Blender.
+# Rigid plates pivot around their physical hinges; materials travel only after the
+# selected configuration has settled. This is a schematic kinematic animation,
+# never a simulation of validated forces, speeds or real hardware.
+def rotation_matrix(axis,angle):
+ c,s=math.cos(angle),math.sin(angle)
+ if axis=='X':return np.array([[1,0,0],[0,c,-s],[0,s,c]])
+ return np.array([[c,0,s],[0,1,0],[-s,0,c]])
+
+def posed_box(scale,base,centre,pivot,rotation,axis='Y'):
+ vertices,faces,col=box_mesh(tuple(v/2 for v in scale),base);r=rotation_matrix(axis,rotation)
+ verts=[r@(v+np.array(centre)-np.array(pivot))+np.array(pivot) for v in vertices]
+ return verts,faces,col
+
+def posed_object(kind,position,rotation=0,axis='Y',scale=1.15):
+ vertices,faces,col=meshes[kind];r=rotation_matrix(axis,rotation)
+ return [r@(v*scale)+np.array(position) for v in vertices],faces,col
+
+wall_depth_maps={}
+def plane_depth(name,normal,constant,box):
+ pos,direction,right,up,f=cameras[name]
+ xx=np.arange(box[0],box[2],dtype=np.float32)[None,:]+.5
+ yy=np.arange(box[1],box[3],dtype=np.float32)[:,None]+.5
+ denominator=float(np.dot(normal,direction))+float(np.dot(normal,right))*(xx-W/2)/f+float(np.dot(normal,up))*(H/2-yy)/f
+ with np.errstate(divide='ignore',invalid='ignore'):
+  result=(constant-float(np.dot(normal,pos)))/denominator
+ return np.where(result>0,result,np.inf)
+
+def bin_wall_depth(name):
+ # Real camera-depth occlusion: a wall hides only geometry behind it. This
+ # preserves the selector in front of the rear tray while its rejection flap
+ # correctly disappears behind that tray's side lip at the end of a passage.
+ if name in wall_depth_maps:return wall_depth_maps[name]
+ walls=[]
+ for x in [-.4,0,.4]:
+  walls.append([(x-.17,-.262,.225),(x+.17,-.262,.225),(x+.17,-.262,.575),(x-.17,-.262,.575)])
+  walls.append([(x+.17,-.262,.225),(x+.17,.262,.225),(x+.17,.262,.655),(x+.17,-.262,.655)])
+ walls += [[(-.19,.146,.715),(.19,.146,.715),(.19,.146,.791),(-.19,.146,.791)],[(.192,.16,.715),(.192,.405,.715),(.192,.405,.867),(.192,.16,.867)]]
+ depth=np.full((H,W),np.inf,dtype=np.float32)
+ for wall in walls:
+  pts=[np.array(p) for p in wall];normal=np.cross(pts[1]-pts[0],pts[2]-pts[0]);normal/=np.linalg.norm(normal)
+  mask=Image.new('L',(W,H));ImageDraw.Draw(mask).polygon([project(v,name)[:2] for v in wall],fill=255)
+  projected=plane_depth(name,normal,float(np.dot(normal,pts[0])),(0,0,W,H))
+  depth=np.minimum(depth,np.where(np.asarray(mask)>0,projected,np.inf))
+ wall_depth_maps[name]=depth;return depth
+
+def draw_world_meshes(im,name,geometry):
+ polygons=[];light=np.array([-.45,-.7,1.]);light/=np.linalg.norm(light)
+ for mesh in geometry:
+  vertices,faces,base=mesh[:3]
+  for face in faces:
+   pts=[vertices[i] for i in face];normal=np.cross(pts[1]-pts[0],pts[2]-pts[0]);length=np.linalg.norm(normal)
+   if not length:continue
+   normal/=length;shade=.54+.43*max(0,float(np.dot(normal,light)));coords=[project(p,name) for p in pts]
+   depth=sum(p[2] for p in coords)/len(coords);col=tuple(max(0,min(255,int(v*255*shade))) for v in base)+(255,)
+   polygons.append((depth,[(x,y) for x,y,z in coords],col,normal,float(np.dot(normal,pts[0]))))
+ foreground=bin_wall_depth(name)
+ for dep,points,col,normal,constant in sorted(polygons,key=lambda p:p[0],reverse=True):
+  box=(max(0,math.floor(min(p[0] for p in points))-1),max(0,math.floor(min(p[1] for p in points))-1),min(W,math.ceil(max(p[0] for p in points))+2),min(H,math.ceil(max(p[1] for p in points))+2))
+  if box[2]<=box[0] or box[3]<=box[1]:continue
+  layer=Image.new('RGBA',(box[2]-box[0],box[3]-box[1]));d=ImageDraw.Draw(layer);local=[(x-box[0],y-box[1]) for x,y in points];d.polygon(local,fill=col)
+  # Fine manufactured-edge glints use the same depth test as their faces.
+  if len(local)==4:d.line(local+[local[0]],fill=tuple(min(255,int(v*.86+24)) for v in col[:3])+(255,),width=1)
+  behind=foreground[box[1]:box[3],box[0]:box[2]]+1e-5<plane_depth(name,normal,constant,box)
+  alpha=np.asarray(layer.getchannel('A')).copy();alpha[behind]=0;layer.putalpha(Image.fromarray(alpha));im.alpha_composite(layer,(box[0],box[1]))
+
+def routing(im,name,local):
+ step=min(3,int(local/3));phase=local-step*3
+ kinds=['PET','ALU','PAPIER','CONTRÔLE'];kind=kinds[step]
+ initial=[(0,0,88),(-18,0,88),(0,82,88),(18,0,88)][step]
+ final=[(-18,0,88),(0,82,88),(18,0,88),(0,0,-27)][step]
+ config=[math.radians(lerp(a,b,ease(phase/.68))) for a,b in zip(initial,final)]
+ tilt,trap,reject=config;steel=(.88,.94,.89);dark=(.25,.34,.29);geometry=[]
+ selector=(0,-.03,.90)
+ for x in [-.275,.275]:geometry.append(posed_box((.35,.30,.026),steel,(x,-.03,.90),selector,tilt))
+ for y in [-.195,.135]:geometry.append(posed_box((.90,.025,.026),steel,(0,y,.90),selector,tilt))
+ # Trapdoor is first posed about its own hinge, then carried by the selector frame.
+ trap_mesh=posed_box((.20,.30,.026),steel,(0,-.03,.90),(-.10,-.03,.90),trap)
+ r=rotation_matrix('Y',tilt)
+ geometry.append(([r@(v-np.array(selector))+np.array(selector) for v in trap_mesh[0]],trap_mesh[1],trap_mesh[2]))
+ geometry.append(posed_box((.23,.49,.024),steel,(0,.065,1.04),(0,-.18,1.04),reject,'X'))
+ # The actuator cranks also move, providing a visible link between servo and plate.
+ for pivot,angle,axis in [((0,-.236,.90),tilt,'Y'),((-.10,-.206,.90),trap,'Y'),((.162,-.18,1.04),reject,'X')]:
+  length=.073 if axis=='Y' else .057
+  centre=(pivot[0]+length/2,pivot[1],pivot[2]) if axis=='Y' else (pivot[0],pivot[1]+length/2,pivot[2])
+  dimensions=(length,.025,.018) if axis=='Y' else (.018,length,.025)
+  geometry.append(posed_box(dimensions,dark,centre,pivot,angle,axis))
+ # Prior deposits remain inside their correct container for continuity.
+ for previous in range(step):
+  past=kinds[previous];end=[(-.44,-.03,.30),(0,-.03,.312),(.44,-.03,.262)][previous]
+  geometry.append((*posed_object(past,end,1.30 if past=='PET' else 0),True))
+ # Queue/feed, settling configuration, release, guided travel, then an occluded landing.
+ if phase<.78:
+  position=mixpoint((-.16,-.03,1.16),(0,-.03,1.16),ease(phase/.55));rot=math.pi/2 if kind=='PET' else 0;axis='Y'
+ elif kind in ['PET','PAPIER']:
+  theta=math.radians(-18 if step==0 else 18);direction=-1 if step==0 else 1
+  support=.04 if kind=='PET' else .016
+  if phase<1.12:
+   q=((phase-.78)/.34)**2;position=(0,-.03,lerp(1.16,.90+support,q))
+  elif phase<1.90:
+   q=((phase-1.12)/.78)**1.7;x=direction*.44*q;position=(x,-.03,.90-x*math.sin(theta)/math.cos(theta)+support)
+  else:
+   q=min(1,((phase-1.90)/.57)**2);edge=.90-direction*.44*math.tan(theta)+support
+   floor=.30 if kind=='PET' else .262;position=(direction*.44,-.03,lerp(edge,floor,q))
+  # A PET bottle lies on the plate; flat paper follows the same incline.
+  rot=(math.pi/2 if kind=='PET' else 0)+theta*ease((phase-.78)/.34)
+  if phase>2.35:rot=lerp(rot,1.30 if kind=='PET' else 0,ease((phase-2.35)/.25))
+  axis='Y'
+ elif kind=='ALU':
+  q=min(1,((phase-.78)/1.35)**2);position=(0,-.03,lerp(1.16,.312,q));rot=0;axis='Y'
+ else:
+  theta=math.radians(-27);support=.065
+  if phase<1.12:
+   q=((phase-.78)/.34)**2;y=-.03;contact=1.04+(y+.18)*math.tan(theta)+support;position=(0,y,lerp(1.16,contact,q))
+  elif phase<1.96:
+   q=((phase-1.12)/.84)**1.7;y=lerp(-.03,.255,q);position=(0,y,1.04+(y+.18)*math.tan(theta)+support)
+  else:
+   q=min(1,((phase-1.96)/.48)**2);edge=1.04+.435*math.tan(theta)+support;position=(0,lerp(.255,.28,q),lerp(edge,.790,q))
+  rot=0;axis='X'
+ geometry.append((*posed_object(kind,position,rot,axis),True))
+ draw_world_meshes(im,name,geometry)
+ d=ImageDraw.Draw(im);color=AMBER if step==3 else [GREEN,'#a8d2e4','#eed69c'][step]
+ titles=['PET · PLAQUE À GAUCHE','ALU · TRAPPE CENTRALE','PAPIER · PLAQUE À DROITE','ISOLATION · VOIE DE CONTRÔLE']
+ rounded(d,(65,331,527,420),rgba('#09231a',235),16,rgba(color),1)
+ txt(d,(86,349),titles[step],'label',color)
+ status='Positionner et stabiliser les plaques' if phase<.78 else ('Passage confirmé dans le compartiment' if phase>2.47 else 'Libérer l’objet vers sa voie dédiée')
+ txt(d,(86,385),status,'small',IVORY)
+ for k,label in enumerate(['Orienter','Libérer','Confirmer']):
+  active=(k==0 and phase<.78) or (k==1 and .78<=phase<2.47) or (k==2 and phase>=2.47)
+  x=69+k*145;d.ellipse((x,463,x+8,471),fill=rgba(color if active else '#465d4f'));txt(d,(x+17,455),label,'small',IVORY if active else MUTED)
+ txt(d,(67,513),'Plaques articulées. Tri par gravité.','small',MINT)
+ txt(d,(67,549),'Cinématique de concept · à valider','small',MUTED)
 
 def glow(im,points,color,width=3,intensity=1):
  layer=Image.new('RGBA',(W,H));dr=ImageDraw.Draw(layer);dr.line(points,fill=rgba(color,180*intensity),width=width*3,joint='curve');im.alpha_composite(layer.filter(ImageFilter.GaussianBlur(width*3)))
@@ -210,13 +346,7 @@ def render(frame):
   txt(d,(69,460),'En cas de doute, contrôler.','body',MINT,alpha)
  elif idx==5:
   txt(d,(64,108),'05  /  AIGUILLAGE','label',MINT,alpha);txt(d,(64,154),'Chaque matière,','title',IVORY,alpha);txt(d,(64,219),'sa propre voie.','title',IVORY,alpha)
-  step=min(3,int(local/3));phase=(local%3)/3;kind=['PET','ALU','PAPIER','CONTRÔLE'][step];dest=[(-.4,-.08,.53),(0,-.08,.53),(.4,-.08,.53),(0,.27,.84)][step];p=bezier((0,-.085,1.0),(0,-.1,.91),(dest[0],dest[1],.79),dest,ease(phase));object3d(d,name,kind,p,rotation=(phase-.4)*1.4,scale=1.15,fade=1-ease((phase-.90)/.1))
-  end=project(dest,name);start=project((0,-.085,1.0),name);color=AMBER if step==3 else [GREEN,'#a8d2e4','#eed69c'][step];pathline(im,[start[:2],project((0,-.09,.87),name)[:2],end[:2]],ease(phase),color,3)
-  rounded(d,(65,331,409,414),rgba('#09231a',230),16,rgba(color),1);txt(d,(87,348),'À VÉRIFIER' if step==3 else kind,'body',color)
-  txt(d,(67,458),'Contrôle de passage','body',MINT,alpha);txt(d,(67,503),'avant validation.','body',IVORY,alpha)
-  for prev in range(step):
-   dpos=[(-.4,-.08,.43),(0,-.08,.43),(.4,-.08,.43)][prev] if prev<3 else (0,.27,.84)
-   object3d(d,name,['PET','ALU','PAPIER'][prev],dpos,rotation=.6,scale=.9)
+  routing(im,name,local)
  elif idx==7:
   txt(d,(64,108),'07  /  EXPLOITATION','label',MINT,alpha);txt(d,(64,154),'Pensée','title',IVORY,alpha);txt(d,(64,219),'pour durer.','title',IVORY,alpha)
   checks=[('Collecter séparément',(.4,-.08,.44)),('Nettoyer les capteurs',(0,-.05,1.20)),('Réparer les modules',(.48,.2,1.48))]
@@ -251,16 +381,16 @@ def sound():
  with wave.open(str(CACHE/'sound.wav'),'wb') as wf:wf.setnchannels(2);wf.setsampwidth(2);wf.setframerate(sr);wf.writeframes(pcm.tobytes())
 
 def fmt(s):
- h=int(s)//3600;m=(int(s)//60)%60;se=int(s)%60;ms=round((s-int(s))*1000);return f'{h:02d}:{m:02d}:{se:02d}.{ms:03d}'
+ milliseconds=round(s*1000);h=milliseconds//3600000;m=(milliseconds//60000)%60;se=(milliseconds//1000)%60;ms=milliseconds%1000;return f'{h:02d}:{m:02d}:{se:02d}.{ms:03d}'
 
-def captions_and_docs():
+def captions_and_docs(voiced=False):
  lines=['WEBVTT',''];
  for a,b,s in CUES:lines += [f'{fmt(a)} --> {fmt(b)}',s,'']
  (OUT/'econova-film-v2-fr.vtt').write_text('\n'.join(lines),encoding='utf-8')
  transcript=['# ÉcoNova — Une entrée. Un nouveau cycle.','',
- 'Film de concept original de 1 min 32 s. Mise en scène 3D de l’architecture envisagée, éclairage original et animation pédagogique et ambiance sonore originale. Sans voix off ; sous-titres français et transcription ci-dessous. Aucune machine réelle ni installation existante ne sont montrées.','',
+ ('Film de concept original de 1 min 32 s. Mise en scène 3D de l’architecture envisagée, animation pédagogique et ambiance sonore originale. Voix française de synthèse locale, sous-titres français synchronisés et transcription ci-dessous. Aucune machine réelle ni installation existante ne sont montrées.' if voiced else 'Film de concept original de 1 min 32 s. Mise en scène 3D de l’architecture envisagée, animation pédagogique et ambiance sonore originale. Sous-titres français et transcription ci-dessous. Aucune machine réelle ni installation existante ne sont montrées.'),'',
  '## Ce que représente le film','',
- 'Les proportions et le dessin de ce modèle constituent une étude visuelle parmi plusieurs, et non une définition du produit final. L’architecture représente un principe à prototyper : entrée unique, présentation des objets un par un, capteurs, mécanisme motorisé, trois filières et une voie de contrôle. Les filières PET, aluminium et papier sont un périmètre d’illustration à adapter avec le collecteur local. Le tri autonome, la sécurité mécanique, la cadence, les coûts, l’énergie et la connexion avec une future app restent à démontrer. La cible précédemment évoquée de 5 ms n’est pas une performance mesurée ; le film n’en revendique aucune.','',
+ 'Ce modèle compact est la référence visuelle commune du film, des illustrations et du blueprint ; il reste une étude de concept, et non une définition industrielle du produit final. L’architecture représente un principe à prototyper : entrée unique, présentation des objets un par un, capteurs, plaques articulées motorisées, trois filières et une voie de contrôle. La plaque principale bascule à gauche pour le PET et à droite pour le papier. Sa trappe centrale s’ouvre pour l’aluminium ; un clapet distinct dirige les objets incertains vers un bac arrière isolé. Les plaques se positionnent avant la libération, et les objets suivent ensuite une pente puis une chute dans leur compartiment. Le film représente une cinématique pédagogique : les forces, frottements, temps d’actionnement, rebonds et dégagements exacts restent à mesurer sur un prototype. Les filières PET, aluminium et papier sont un périmètre d’illustration à adapter avec le collecteur local. Le tri autonome, la sécurité mécanique, la cadence, les coûts, l’énergie et la connexion avec une future app restent à démontrer. La cible précédemment évoquée de 5 ms n’est pas une performance mesurée ; le film n’en revendique aucune.','',
  'Un QR public identifie une station mais ne prouve pas la présence de l’utilisateur. Une implémentation matérielle devra confirmer la session sur place, lier un dépôt confirmé à un événement unique et protéger le mécanisme contre l’accès, les liquides, les objets dangereux et les obstructions. Le portefeuille montré est une interface fictive.','',
  '## Transcription','']
  for c in CHAPTERS:
@@ -269,12 +399,35 @@ def captions_and_docs():
    if c['start']<=a<c['end']:transcript+=[s,'']
  transcript += ['## Production et accessibilité','',
  'Vidéo MP4 H.264 / audio AAC, 1280 × 720, 24 images/s. Le film est lancé volontairement par le visiteur, sans lecture automatique. La piste française est fournie séparément au format WebVTT. Les chapitres permettent d’accéder directement à un principe ; cette transcription constitue une alternative textuelle complète.','',
- 'Les sources de production sont `tools/render_film_v2_scene.py` et `tools/render_film_v2.py`. Elles utilisent des outils hors ligne et ne créent aucune dépendance du site. Les images, animations et sons de ce film sont des créations originales réalisées pour EcoScan.','']
+ 'Les sources de production sont `tools/render_film_v2_scene.py` et `tools/render_film_v2.py`. Elles utilisent des outils hors ligne et ne créent aucune dépendance du site. Les images, animations et ambiance sonore de ce film sont des créations originales réalisées pour EcoScan.',*( ['', 'La narration française est produite localement avec le modèle neural Kokoro, voix française SIWIS ; le texte est original et les sources et licences sont détaillées dans [VOIX_OFF.md](VOIX_OFF.md), avec un générateur hors ligne `tools/generate_voiceover.py`. La voix est mixée au premier plan ; la musique baisse pendant les explications.'] if voiced else []),'']
  (ROOT/'docs/VIDEO_V2_TRANSCRIPTION.md').write_text('\n'.join(transcript),encoding='utf-8')
  (OUT/'econova-film-v2-chapters.json').write_text(json.dumps({'duration':DURATION,'chapters':[{k:c[k] for k in ['start','end','title']} for c in CHAPTERS]},ensure_ascii=False,indent=2),encoding='utf-8')
 
+def mux_voice(video,voice,out):
+ # Normalize narration and duck the original bed only while someone speaks.
+ filters='[0:a]volume=0.65[bed];[1:a]aformat=sample_rates=48000:channel_layouts=stereo,loudnorm=I=-18:TP=-2:LRA=7,asplit=2[voice][side];[bed][side]sidechaincompress=threshold=0.025:ratio=8:attack=80:release=500[ducked];[ducked][voice]amix=inputs=2:normalize=0,alimiter=limit=0.95:level=0[mix]'
+ subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(video),'-i',str(voice),'-filter_complex',filters,'-map','0:v:0','-map','[mix]','-c:v','copy','-c:a','aac','-b:a','128k','-ar','48000','-movflags','+faststart','-shortest',str(out)],check=True)
+
+def read_narration(path):
+ global CUES
+ data=json.loads(Path(path).read_text(encoding='utf-8'))
+ entries=data if isinstance(data,list) else data.get('cues',data.get('segments',[]))
+ if not entries:raise ValueError('Narration contains no timed cues')
+ CUES=[(float(c['start']),float(c['end']),c['text']) for c in entries]
+ for a,b,text in CUES:
+  if not(0<=a<b<=DURATION) or not text.strip():raise ValueError('Invalid narration timing')
+
 def main():
- load();captions_and_docs();sound()
+ parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--stage-only',action='store_true');parser.add_argument('--mux-only',action='store_true');parser.add_argument('--voice');parser.add_argument('--narration');args=parser.parse_args()
+ if args.voice and not args.narration:parser.error('--voice requires the matching --narration timed JSON')
+ if args.narration:read_narration(args.narration)
+ if args.mux_only:
+  if not args.voice or not args.narration:parser.error('--mux-only requires --voice and --narration')
+  final=CACHE/'econova-film-v2-voiced.mp4';mux_voice(CACHE/'econova-film-v2.mp4',Path(args.voice),final)
+  staged=OUT/'econova-film-v2.mp4.pending';shutil.copyfile(final,staged);staged.replace(OUT/'econova-film-v2.mp4');captions_and_docs(True);print('Voice integrated, captions and transcription updated.',flush=True);return
+ load();sound()
+ if not args.stage_only:captions_and_docs(bool(args.voice))
+ plates['hero'].convert('RGB').save(OUT/'econova-film-v2-hero.webp',quality=92,method=6)
  poster=render(4*FPS);poster.save(OUT/'econova-film-v2-poster.jpg',quality=92)
  thumbs=[render(int(t*FPS)).resize((480,270)) for t in [4,13,22,33,44,54,60,67,76,87]]
  contact=Image.new('RGB',(1440,540),'#0b1e15')
@@ -284,7 +437,7 @@ def main():
  for i,thumb in enumerate(thumbs):frames.paste(thumb,((i%4)*480,(i//4)*270))
  frames.save(CACHE/'all-shots.jpg',quality=94)
  # Still backgrounds remain low bitrate; actual moving paths stay sharp.
- cmd=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','pipe:0','-i',str(CACHE/'sound.wav'),'-c:v','libx264','-threads','2','-preset','fast','-crf','22','-maxrate','1100k','-bufsize','2200k','-pix_fmt','yuv420p','-c:a','aac','-b:a','80k','-movflags','+faststart','-shortest',str(CACHE/'econova-film-v2.mp4')]
+ cmd=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','pipe:0','-i',str(CACHE/'sound.wav'),'-c:v','libx264','-threads','2','-preset','fast','-crf','20','-maxrate','1800k','-bufsize','3600k','-pix_fmt','yuv420p','-c:a','aac','-b:a','80k','-movflags','+faststart','-shortest',str(CACHE/'econova-film-v2.mp4')]
  p=subprocess.Popen(cmd,stdin=subprocess.PIPE)
  try:
   for frame in range(DURATION*FPS):
@@ -292,8 +445,13 @@ def main():
    if frame%(FPS*8)==0:print(f'Rendering film {frame/FPS:.0f}/{DURATION}s',flush=True)
  finally:p.stdin.close()
  if p.wait():raise RuntimeError('Film encoding failed')
+ if args.stage_only:
+  print('Picture staged for narration:',CACHE/'econova-film-v2.mp4',flush=True);return
+ final=CACHE/'econova-film-v2.mp4'
+ if args.voice:
+  final=CACHE/'econova-film-v2-voiced.mp4';mux_voice(CACHE/'econova-film-v2.mp4',Path(args.voice),final)
  staged=OUT/'econova-film-v2.mp4.pending'
- shutil.copyfile(CACHE/'econova-film-v2.mp4',staged)
+ shutil.copyfile(final,staged)
  staged.replace(OUT/'econova-film-v2.mp4')
  print('Completed',OUT/'econova-film-v2.mp4',(OUT/'econova-film-v2.mp4').stat().st_size,'bytes',flush=True)
 if __name__=='__main__':main()

@@ -13,7 +13,7 @@ for(const img of await page.locator('.hero-product img,.product-brand img,.bluep
  await img.scrollIntoViewIfNeeded();await img.evaluate(el=>el.decode());assert.ok(await img.evaluate(el=>el.naturalWidth>0));
 }
 for(const width of [360,390,768,1024,1440]){await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow ${width}`);}
-for(const asset of ['product.css','product.js','assets/logo-ecoscan.svg','assets/logo-ecoscan-light.svg','assets/econova-studio.webp','assets/econova-blueprint-v2.svg','docs/RECHERCHE_INNOVATION.md'])assert.equal((await page.request.get(base+'/'+asset)).status(),200,asset);
+for(const asset of ['product.css','product.js','assets/logo-ecoscan.svg','assets/logo-ecoscan-light.svg','assets/econova-compact-studio.webp','assets/econova-blueprint-v2.svg','docs/RECHERCHE_INNOVATION.md'])assert.equal((await page.request.get(base+'/'+asset)).status(),200,asset);
 await page.locator('#guided-action').scrollIntoViewIfNeeded();await page.click('#reset');await page.click('#guided-action');await page.selectOption('#item','mix');await page.click('#scan');await page.waitForFunction(()=>document.getElementById('drop-zone').dataset.state==='confirmed');assert.equal(await page.locator('#points').textContent(),'30');assert.equal(await page.locator('#dash-points').textContent(),'30');
 assert.deepEqual(errors,[]);
 const nojs=await browser.newPage({javaScriptEnabled:false,viewport:{width:360,height:850}});await nojs.goto(base);assert.ok(await nojs.locator('#mise-en-place').isVisible());assert.ok(await nojs.locator('#laboratoire noscript').isVisible());assert.ok(await nojs.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

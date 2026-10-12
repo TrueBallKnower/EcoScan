@@ -74,3 +74,40 @@ document.getElementById('download-protocol').addEventListener('click',()=>{
 });
 displayProtocol(activeProtocol);
 // Source of truth remains the existing simulation state; this file adds no wallet.
+
+// Compact feedback uses the existing wallet events: no extra counter or points rule.
+function showInlineReceipt(detail) {
+  const receipt=document.getElementById('demo-result');
+  if(!receipt)return;
+  const complete=['confirmed','rejected'].includes(detail.phase);
+  receipt.hidden=!complete;
+  if(!complete)return;
+  document.getElementById('demo-result-title').textContent=detail.phase==='rejected'?'Contrôle requis · aucun point ajouté':`Dépôt validé · +${detail.earned} EcoPoints fictifs`;
+  document.getElementById('demo-result-detail').textContent=`Solde local : ${detail.points} points fictifs. Aucun tri réel ni transfert vers une app.`;
+  receipt.dataset.result=detail.phase;
+}
+document.addEventListener('ecoscan:wallet',event=>showInlineReceipt(event.detail));
+document.addEventListener('ecoscan:phase',event=>{
+  const preview=document.getElementById('mechanism-preview');
+  if(!preview)return;
+  preview.dataset.mechanismPhase=event.detail.phase;
+  if(event.detail.route){
+    preview.dataset.mechanismRoute=event.detail.route;
+    // Restart the object only after each new plate command, including mixed input.
+    const object=preview.querySelector('.preview-object');
+    object.style.animation='none';void object.offsetWidth;object.style.animation='';
+  }
+  if(!['confirmed','rejected'].includes(event.detail.phase))document.getElementById('demo-result').hidden=true;
+  if(['ready','disconnected','blocked-full','blocked-offline'].includes(event.detail.phase))preview.dataset.mechanismRoute='neutral';
+});
+const navTargets=[...document.querySelectorAll('#navigation a[href^="#"]')].map(link=>({link,target:document.querySelector(link.getAttribute('href'))})).filter(item=>item.target);
+let navigationScheduled=false;
+function updateNavigation() {
+  navigationScheduled=false;
+  let active=null,nearest=-Infinity;
+  navTargets.forEach(item=>{const top=item.target.getBoundingClientRect().top;if(top<=140&&top>nearest){active=item;nearest=top;}});
+  navTargets.forEach(item=>{item.link.classList.toggle('current-section',item===active);if(item===active)item.link.setAttribute('aria-current','location');else item.link.removeAttribute('aria-current');});
+  const back=document.getElementById('back-top');if(back)back.hidden=scrollY<1200;
+}
+addEventListener('scroll',()=>{if(!navigationScheduled){navigationScheduled=true;requestAnimationFrame(updateNavigation);}},{passive:true});
+addEventListener('resize',updateNavigation);updateNavigation();

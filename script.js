@@ -23,23 +23,25 @@ const items = {
 // One shared state for station, phone, levels and animated transactions.
 let connected = false, deposited = false, busy = false, points = 0, deposits = 0;
 let transaction = 0;
+let earnedLastDeposit = 0;
 const levels = {pet:45,can:45,paper:45};
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 try { const saved = Number(localStorage.getItem('ecoscan-demo-points')); if(Number.isSafeInteger(saved) && saved >= 0 && saved <= 1000000) points = saved; }
 catch { $('storage-status').textContent = 'Stockage indisponible : les points restent disponibles pendant cette visite.'; }
 function routesFor(value) { return value === 'mix' ? ['pet','can','paper'] : ['cup','food'].includes(value) ? ['check'] : [value]; }
 function isFull(value = $('item').value) { return routesFor(value).some(route => levels[route] >= 100); }
-function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; updateGuide(); }
+function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; updateGuide(); document.dispatchEvent(new CustomEvent('ecoscan:wallet',{detail:{points,deposits,earned:earnedLastDeposit,phase:$('drop-zone').dataset.state}})); }
 function savePoints() {
   try {localStorage.setItem('ecoscan-demo-points',String(points));}
   catch { $('storage-status').textContent = 'Stockage indisponible : les points ne seront pas conservés après cette visite.'; }
   renderPoints();
 }
-function setPhase(phase, message) {
+function setPhase(phase, message, route = null) {
   $('drop-zone').dataset.state = phase;
   if(message) $('scan-status').textContent = message;
   const order=['detecting','scanning','routing','confirmed'], index=order.indexOf(phase);
   document.querySelectorAll('[data-lab]').forEach((el,i)=>el.classList.toggle('active',index>=i));
+  document.dispatchEvent(new CustomEvent('ecoscan:phase',{detail:{phase,route}}));
 }
 function updateAvailability() {
   const offline=$('offline').checked, full=isFull();
@@ -61,7 +63,7 @@ function updateAvailability() {
   setPhase(phase,offline?'Connexion indisponible : dépôt et crédit fictif suspendus.':!connected?'Connectez d’abord le téléphone de démonstration.':full?'Compartiment nécessaire plein : dépôt suspendu. Réglez son niveau pour simuler une collecte.':'Prêt : glissez un objet dans l’ouverture ou utilisez le bouton de dépôt.');
 }
 function resetJourney() {
-  transaction++; busy=false; deposited=false;
+  transaction++; busy=false; deposited=false; earnedLastDeposit=0;
   $('sort-feedback').textContent=''; $('earn-feedback').textContent='';
   $('wallet-receipt').textContent='En attente d’un nouveau dépôt simulé.';
   $('points').classList.remove('wallet-credit');
@@ -97,16 +99,18 @@ async function startDeposit() {
   await pause(); if(!valid())return;
   setPhase('scanning','Analyse simulée — identification programmée, sans caméra ni IA réelle.');
   await pause(); if(!valid())return;
-  setPhase('routing',uncertain?'Routage simulé vers le contrôle isolé.':'Routage simulé vers les compartiments internes.');
   $('step-sort').classList.add('active');
-  routes.forEach(route=>document.querySelector(`[data-route="${route}"]`).classList.add('routed'));
-  await pause(); if(!valid())return;
+  for(const route of routes) {
+    setPhase('routing',route==='check'?'Routage simulé vers le contrôle isolé.':`Plaques orientées vers ${route==='pet'?'PET':route==='can'?'l’aluminium':'le papier'} — routage simulé.`,route);
+    document.querySelector(`[data-route="${route}"]`).classList.add('routed');
+    await pause(); if(!valid())return;
+  }
   // Commit once, after all stages. Cancellation never grants points.
   busy=false; deposited=true;
   setPhase(uncertain?'rejected':'confirmed');
   $('sort-feedback').textContent=value==='mix'?'Dépôt mélangé simulé : trois objets séparés puis automatiquement orientés vers PET, aluminium et papier. Le mécanisme de séparation reste à tester.':uncertain?'Analyse simulée incertaine : contrôle dédié, isolé des filières. Aucun point crédité.':`Tri simulé : ${items[value][0]} orienté automatiquement vers le compartiment ${value==='pet'?'PET':value==='can'?'aluminium':'papier'}.`;
   if(!uncertain) {
-    const awarded=Math.min(value==='mix'?30:10,1000000-points);points+=awarded;deposits++;savePoints();
+    const awarded=Math.min(value==='mix'?30:10,1000000-points);earnedLastDeposit=awarded;points+=awarded;deposits++;savePoints();
     $('step-earn').classList.add('active');$('points').classList.add('wallet-credit');
     $('wallet-receipt').textContent=`+${awarded} EcoPoints fictifs reçus après validation du dépôt simulé.`;
     $('earn-feedback').textContent='Validation simulée terminée. Un seul crédit local pour ce dépôt ; aucun transfert vers une application réelle.';
@@ -226,7 +230,7 @@ function updateStation() {
 }
 $('fill-level').addEventListener('input',()=>{levels[$('fill-bin').value]=Number($('fill-level').value);updateStation();});
 $('fill-bin').addEventListener('change',updateStation);$('offline').addEventListener('change',updateStation);updateStation();
-const viewCaptions={exterior:'Extérieur : ouverture commune, affichage de session fictive et accès maintenance. Aucun équipement fabriqué.',cutaway:'Coupe : trajet de l’objet vers les trois bacs internes et zone de contrôle pour les objets incertains.',mechanism:'Mécanisme : isolement → caméra et éclairage envisagés → décision → aiguillage motorisé. Ensemble à développer et tester.'};
+const viewCaptions={exterior:'Extérieur : ouverture commune, affichage de session fictive et accès maintenance. Aucun équipement fabriqué.',cutaway:'Coupe du même modèle compact : habillage retiré pour expliquer les organes, trois bacs internes et contrôle isolé à l’arrière. Aucun équipement construit.',mechanism:'Même modèle compact : plaques latérales articulées, trappe centrale aluminium et volet de contrôle arrière. Le mouvement et le glissement restent à tester sur un banc.'};
 document.querySelectorAll('[data-view]').forEach(button=>{if(button.tagName!=='BUTTON')return;button.addEventListener('click',()=>{
   document.querySelector('.machine-shell').dataset.view=button.dataset.view;
   document.querySelectorAll('button[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
@@ -235,12 +239,9 @@ document.querySelectorAll('[data-view]').forEach(button=>{if(button.tagName!=='B
 });});
 const details={isolation:'Séparation : présenter les objets un par un sur un convoyeur envisagé. Un dépôt mélangé nécessite une séparation mécanique encore non démontrée.',sensor:'Caméra et éclairage internes : observer les objets, pas les passants. Une image seule ne certifie pas tous les matériaux ; capteurs et précision à valider.',routing:'Aiguillage motorisé envisagé : diriger une matière reconnue vers son bac ; isoler les inconnus pour contrôle plutôt que contaminer une filière.',maintenance:'Capteurs de remplissage envisagés et porte verrouillable réservée à la collecte. Nettoyage, sécurité et accès technique à prototyper.'};
 document.querySelectorAll('[data-detail]').forEach(button=>button.addEventListener('click',()=>{$('blueprint-detail').textContent=details[button.dataset.detail];document.querySelectorAll('[data-detail]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));}));
-let blueprintTimer;
 $('blueprint-play').addEventListener('click',()=>{
-  document.querySelector('button[data-view="mechanism"]').click();const shell=document.querySelector('.machine-shell');
-  clearTimeout(blueprintTimer);shell.classList.remove('trace-path');void shell.offsetWidth;shell.classList.add('trace-path');
-  $('blueprint-caption').textContent='Trajet conceptuel : dépôt commun → isolement → scan → aiguillage → bac ou contrôle. Aucun mécanisme réel.';
-  blueprintTimer=setTimeout(()=>shell.classList.remove('trace-path'),reducedMotion()?50:2400);
+  document.querySelector('button[data-view="mechanism"]').click();
+  document.querySelector('[data-video-time="50"]').click();
 });
 
 // Guided entry mirrors the same station state, never a second wallet.
@@ -252,7 +253,7 @@ function updateGuide() {
 }
 $('guided-action').addEventListener('click',()=>{
   if(busy||$('offline').checked)return;
-  if(!connected){$('connect').click();$('demo').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});}
+  if(!connected){$('connect').click();$('item').focus({preventScroll:true});$('item').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'center'});}
   else if(deposited){resetJourney();$('item').focus();}
   else {startDeposit();$('drop-zone').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'center'});}
 });
@@ -282,6 +283,7 @@ document.querySelectorAll('[data-video-time]').forEach(button=>button.addEventLi
   pendingVideoTime=Number(button.dataset.videoTime);
   document.querySelectorAll('[data-video-time]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   $('video-status').textContent='Chargement du chapitre…';
+  document.querySelector('.video-frame').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});
   if(explainer.readyState<1){explainer.preload='auto';explainer.load();}else seekChapter();
 }));
 explainer.addEventListener('error',()=>{$('video-status').textContent='La lecture est indisponible. Téléchargez la vidéo ou consultez la transcription.';});
@@ -293,3 +295,13 @@ function updateReadingProgress() {
 }
 addEventListener('scroll',()=>{if(!scrollScheduled){scrollScheduled=true;requestAnimationFrame(updateReadingProgress);}},{passive:true});
 addEventListener('resize',updateReadingProgress);updateReadingProgress();
+
+// Active chapter follows both chapter buttons and the native playback controls.
+function updateActiveChapter() {
+  if(pendingVideoTime!==null)return;
+  const buttons=[...document.querySelectorAll('[data-video-time]')];
+  let active=buttons[0];
+  buttons.forEach(button=>{if(Number(button.dataset.videoTime)<=explainer.currentTime+.05)active=button;});
+  buttons.forEach(button=>button.setAttribute('aria-pressed',String(button===active)));
+}
+['timeupdate','seeked','loadedmetadata'].forEach(event=>explainer.addEventListener(event,updateActiveChapter));
