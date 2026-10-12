@@ -4,6 +4,8 @@ Projet académique indépendant porté par **Albin Krasniqi**, dans le cadre d�
 
 Site public : https://trueballknower.github.io/EcoScan/
 
+Une adresse gratuite sans le nom du compte GitHub peut être créée sur Cloudflare Pages : **ecosac.pages.dev** est le nom proposé, sous réserve de disponibilité. La configuration et les quelques clics nécessaires sont dans [HEBERGEMENT_CLOUDFLARE.md](docs/HEBERGEMENT_CLOUDFLARE.md). Cette nouvelle adresse n’est pas encore créée ; le site ci-dessus reste l’adresse active.
+
 Aucune station réelle, reconnaissance IA, récompense commerciale ni partenariat officiel UNIL/ONU n’est revendiqué. Le site est un démonstrateur statique, pas une application connectée à du matériel.
 
 ## Ouvrir et modifier le site

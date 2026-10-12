@@ -1,0 +1,2 @@
+# Optional Cloudflare build only; the browser has no dependencies.
+qrcode==8.2
