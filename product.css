@@ -98,6 +98,11 @@ h2 { font-size:clamp(2.4rem,5.5vw,5.25rem); font-weight:650; letter-spacing:-.05
 #video-explicative .lead, #video-explicative .note { color:#bcd0bc; }
 .video-frame { padding:0; border:1px solid #507957; border-radius:20px; overflow:hidden; }
 .video-frame video { border-radius:19px; }
+.film-language { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:32px 0 20px; }
+.film-language .note { margin:9px 0 0; font-size:.8rem; }
+.film-language-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.film-language-buttons button { min-height:44px; padding:11px 18px; border:1px solid #6a9277; border-radius:25px; color:#e5f1df; background:#123b2e; font-size:.8rem; }
+.film-language-buttons button[aria-pressed=true] { background:#cce6c0; color:#123b2e; border-color:#cce6c0; }
 .video-chapters button { background:#123b2e; color:#d4e7cf; border-color:#496e50; }
 .video-chapters button[aria-pressed=true] { background:#b9dfc9; color:#052d29; }
 #video-explicative .video-transcript { border-color:#496e50; }
@@ -145,6 +150,7 @@ footer { background:#092b23; }
   .phone-demo { padding:40px 23px 24px; }
 }
 @media(max-width:700px) {
+  .film-language { align-items:flex-start; flex-direction:column; }
   header { height:auto; padding:15px 6%; min-height:72px; }
   .product-brand img { width:158px; }
   .product-hero { grid-template-columns:1fr; padding:45px 6% 85px; min-height:0; gap:35px; }
@@ -241,7 +247,16 @@ footer { background:#092b23; }
 .scale-study figcaption { margin-top:12px; font-size:.58rem; color:#647467; letter-spacing:.1em; }
 .scale-study h3 { font-size:1.5rem; }
 .scale-study p { font-size:.92rem; color:#50645d; }
+.resource-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; margin:36px 0; }
+.resource-card { display:block; padding:28px; border:1px solid #c7d6c6; border-radius:18px; background:#fff; text-decoration:none; }
+.resource-card:hover { border-color:#075f55; background:#f5faf0; }
+.resource-card>span { display:block; color:#647467; font-size:.62rem; letter-spacing:.1em; margin-bottom:24px; }
+.resource-card h3 { font-size:1.45rem; }
+.resource-card p { color:#50645d; font-size:.92rem; }
+.resource-card>b { color:#075f55; font-size:.8rem; }
 @media(max-width:700px) {
+  .resource-grid { grid-template-columns:1fr; }
+  .resource-card { padding:24px; }
   .canonical-model { padding:0; border-width:1px; }
   .model-legend { padding:17px; }
   .scale-study-content { grid-template-columns:1fr; gap:25px; }

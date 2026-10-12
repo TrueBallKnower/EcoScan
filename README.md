@@ -23,7 +23,9 @@ Sur votre propre ordinateur, consultez `http://localhost:8000`. Dans Codex, le s
 | `styles.css` | Styles des composants, responsive et animations |
 | `product.css` | Nouvelle direction visuelle : hero, simulation, laboratoire, marque |
 | `script.js` | Session fictive, objets, dépôt, points, quiz, niveaux, vidéo et calculateur |
-| `product.js` | Protocoles téléchargeables, reçu de dépôt et navigation active |
+| `product.js` | Protocoles téléchargeables et reçu de dépôt |
+| `experience-navigation.js` / `.css` | Cinq parcours, ancres, historique, focus et transitions |
+| `experience-shop.js` / `.css` | Prototype d’app, catalogue et confirmation d’échange |
 | `assets/` | Logo, illustrations, blueprint, QR, films et sous-titres locaux |
 | `docs/` | Faisabilité, recherche, références, stratégie et transcriptions |
 | `tools/` | Serveur local et générateurs hors ligne des médias |
@@ -40,6 +42,14 @@ Dans **Settings → Pages**, sélectionner **Deploy from a branch → main → /
 **Chaque commit poussé sur `main` déclenche le déploiement.** Vérifier la coche verte de `pages build and deployment` dans Actions, puis le site public. Si le navigateur conserve une ancienne version, actualiser complètement. L’hébergement gratuit d’un dépôt privé dépend de l’offre GitHub ; un dépôt public est la voie gratuite habituelle après vérification des fichiers.
 
 Vous pouvez demander à Codex : « Modifie EcoScan pour …, teste sur mobile et ordinateur, puis publie sur main ». Sans accès en écriture, téléverser les fichiers via **Add file → Upload files**, puis créer un commit sur `main`. Une petite modification de texte peut aussi se faire avec le crayon GitHub.
+
+## Parcours, app et boutique
+
+La navigation présente cinq parcours : **Découvrir, Essayer, Construire, Mission et Ressources**. Le JavaScript affiche un groupe de sections à la fois ; les anciennes ancres et le précédent/suivant fonctionnent toujours. Les contenus restent tous lisibles sans JavaScript. Pour ajouter une section, donner à son élément `<section>` un `data-view-group` parmi `discover`, `try`, `build`, `mission` et `resources`, puis adapter les raccourcis dans `experience-navigation.js` si nécessaire. Changer de parcours conserve le DOM, la session et le portefeuille ; quitter le film le met en pause. Les transitions courtes respectent la réduction des mouvements.
+
+L’app dans `#app` est un prototype intégré à la page : Parcours, Portefeuille et Boutique. Elle partage la session et le solde central de `script.js`, sans caméra, géolocalisation, compte ni installation. `#boutique` explore quatre concepts utiles à 20/30/40/60 points fictifs. Choisir un produit ouvre une confirmation ; annuler ne débite rien. La confirmation vérifie le produit, son montant, le solde et l’absence de dépôt en cours ; un même événement ne débite qu’une fois. Il n’existe aucune commande, réservation, livraison ou produit disponible.
+
+Seul le solde survit au rechargement. Le dernier échange et le registre de demandes appartiennent à la visite ; remettre les points à zéro les efface et ferme la confirmation. Les descriptions de matières recyclées sont des intentions à valider. Réemploi et réparation restent prioritaires. Les contrats sont documentés dans `docs/BOUTIQUE_APP.md` et la suite dans `docs/ROADMAP.md`.
 
 ## Ce qui fonctionne et ce qui reste conceptuel
 
@@ -65,9 +75,9 @@ La première image large `econova-studio.webp` apparaît seulement dans « Explo
 
 Le QR **réellement scannable** est `ecoscan-station-qr.svg`. Il ouvre `https://trueballknower.github.io/EcoScan/?station=ECO-001#demo`, puis demande une confirmation fictive. Il ne transfère aucun point entre appareils et ne prouve aucune présence ou dépôt. Pour changer l’URL, modifier `tools/generate_qr.py` et régénérer le SVG avec le paquet Python optionnel `qrcode==8.2`.
 
-Le film est `econova-film-v2.mp4` : **92 secondes**, 720p, H.264/AAC, modèle Blender original et voix off française de synthèse (Kokoro / SIWIS), produite localement avec une ambiance originale qui baisse pendant les explications. Les plaques latérales, la trappe centrale, le volet de contrôle et leurs actionneurs bougent avant le passage des objets ; cette mise en scène n’est pas une validation mécanique. Les chapitres sont dans `econova-film-v2-chapters.json`, les captions dans `econova-film-v2-fr.vtt` et la transcription dans `docs/VIDEO_V2_TRANSCRIPTION.md`. La vidéo ne démarre pas automatiquement ; `preload="none"` évite de charger le film tant que le visiteur n’interagit pas. Choisir un chapitre autorise son chargement, sans lecture automatique.
+Le film principal est `econova-film-v2-en.mp4` : **92 secondes**, 720p, H.264/AAC, avec narration anglaise (Kokoro / Heart) et sous-titres français. `econova-film-v2.mp4` est la version française corrigée (SIWIS). Les chapitres sont racontés d’un bloc, à vitesse naturelle, et parlent de bouteilles en plastique sans épellation de PET. Les deux films possèdent le même flux d’images ; seule la voix change. La musique originale baisse pendant les explications. Les plaques latérales, la trappe centrale, le volet de contrôle et leurs actionneurs bougent avant le passage des objets ; cette mise en scène n’est pas une validation mécanique. Les chapitres sont dans `econova-film-v2-chapters.json`, les captions dans `econova-film-v2-fr.vtt` et les transcriptions dans `docs/VIDEO_V2_TRANSCRIPTION.md` et `docs/VIDEO_V2_EN_TRANSCRIPTION.md`. Le sélecteur English / Français conserve la position et l’état de lecture. La version anglaise possède `econova-film-v2-en.vtt` et sa traduction `econova-film-v2-en-fr.vtt`. La vidéo ne démarre pas automatiquement ; `preload="none"` évite de charger le film tant que le visiteur n’interagit pas. Choisir un chapitre autorise son chargement, sans lecture automatique.
 
-Les générateurs `render_film_v2.py` et `render_film_v2_scene.py` utilisent Blender, Python/Pillow et ffmpeg hors ligne. `render_compact_model.py` reprend leur géométrie pour les vues du site. `generate_voiceover.py` produit la narration à partir de `narration_fr.json` ; les fichiers de modèle, l’installation optionnelle et leurs licences sont expliqués dans `docs/VOIX_OFF.md`. Aucune synthèse ne s’exécute lors de la visite du site. Ces outils ne sont **pas nécessaires pour modifier les textes ou publier le site**. Les médias historiques sont conservés sans être la présentation actuelle.
+Les générateurs `render_film_v2.py` et `render_film_v2_scene.py` utilisent Blender, Python/Pillow et ffmpeg hors ligne. `render_compact_model.py` reprend leur géométrie pour les vues du site. `generate_voiceover.py` produit la narration à partir de `narration_fr.json` et `narration_en.json` ; les fichiers de modèle, l’installation optionnelle et leurs licences sont expliqués dans `docs/VOIX_OFF.md`. Aucune synthèse ne s’exécute lors de la visite du site. Ces outils ne sont **pas nécessaires pour modifier les textes ou publier le site**. Les médias historiques sont conservés sans être la présentation actuelle.
 
 ## Faisabilité et sources
 
@@ -76,7 +86,7 @@ Les générateurs `render_film_v2.py` et `render_film_v2_scene.py` utilisent Ble
 - `docs/CONTENT_STRATEGY.md` : mission, slogans, récit et choix éditoriaux.
 - `docs/BRIEF_SOURCE.md` : document historique reçu ; il ne constitue pas une liste actuelle de fondateurs.
 
-Un dossier de présentation partageable est disponible dans `assets/EcoScan-dossier-concept.zip` : synthèse, faisabilité, recherche, logo, blueprint, QR et transcription. Le régénérer avec `python3 tools/make_presentation_kit.py` après changement de ces documents. La vidéo se consulte sur le site pour garder l’archive légère.
+Un dossier de présentation partageable est disponible dans `assets/EcoScan-dossier-concept.zip` : synthèse, faisabilité, recherche, roadmap, app/boutique, logo, blueprint, QR et transcriptions. Le régénérer avec `python3 tools/make_presentation_kit.py` après changement de ces documents. La vidéo se consulte sur le site pour garder l’archive légère.
 
 Le premier banc proposé vise PET de boisson et canettes connues ; papier et mélanges libres demandent des essais supplémentaires. Une commande moteur ne prouve pas une arrivée : prévoir confirmations de passage et de position avant points. Les 5 ms restent une cible non démontrée de reconnaissance, jamais un temps de tri complet. Les 65 %, 40 % et 2030 restent les objectifs du support initial, pas des résultats.
 
@@ -95,6 +105,8 @@ node tests/vision.cjs
 node tests/product.cjs
 node tests/media.cjs
 node tests/experience.cjs
+node tests/workspace.cjs
+node tests/shop.cjs
 ```
 
 Pour vérifier le chemin de publication, servir le parent du dépôt puis cibler `/EcoScan` :

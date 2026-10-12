@@ -2,9 +2,10 @@
 const {chromium}=require('playwright');const assert=require('node:assert/strict');
 const base=process.env.ECOSCAN_TEST_URL||'http://127.0.0.1:8000';
 const settle=p=>p.waitForFunction(()=>['confirmed','rejected'].includes(document.getElementById('drop-zone').dataset.state));
+async function open(page,id){await page.evaluate(value=>{location.hash=value;},id);await page.locator('#'+id).waitFor({state:'visible'});await page.waitForTimeout(220);}
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
- const point=async()=>Number(await page.locator('#points').textContent());
+ const point=async()=>Number(await page.locator('#points').textContent());await open(page,'demo');
  await page.click('#reset');await page.locator('[data-object=pet]').click();await page.locator('#drop-zone').focus();await page.keyboard.press('Space');assert.equal(await point(),0);assert.equal(await page.locator('#drop-zone').getAttribute('data-state'),'disconnected');
  await page.click('#connect');await page.locator('[data-object=pet]').dragTo(page.locator('#drop-zone'));assert.equal(await point(),0);assert.equal(await page.locator('#item').isDisabled(),true);
  await page.locator('#scan').evaluate(e=>{e.dispatchEvent(new MouseEvent('click'));e.dispatchEvent(new MouseEvent('click'));});await settle(page);assert.equal(await point(),10);assert.equal(await page.locator('#dash-deposits').textContent(),'1');assert.equal(await page.locator('#dash-points').textContent(),'10');
@@ -21,13 +22,13 @@ const settle=p=>p.waitForFunction(()=>['confirmed','rejected'].includes(document
  await page.setViewportSize({width:360,height:800});await page.locator('[data-object=paper]').click();await page.click('#scan');await settle(page);assert.equal(await point(),20);
  await page.click('#redeem');assert.equal(await point(),0);assert.equal(await page.locator('#dash-points').textContent(),'0');
  await page.locator('[data-object=cup]').click();await page.click('#scan');await settle(page);assert.equal(await point(),0);assert.equal(await page.locator('#drop-zone').getAttribute('data-state'),'rejected');
- for(const view of ['exterior','cutaway','mechanism']){await page.locator(`button[data-view=${view}]`).click();assert.equal(await page.locator('.machine-shell').getAttribute('data-view'),view);assert.equal(await page.locator(`button[data-view=${view}]`).getAttribute('aria-pressed'),'true');assert.ok((await page.locator('#blueprint-caption').textContent()).length>50);}
+ await open(page,'station');for(const view of ['exterior','cutaway','mechanism']){await page.locator(`button[data-view=${view}]`).click();assert.equal(await page.locator('.machine-shell').getAttribute('data-view'),view);assert.equal(await page.locator(`button[data-view=${view}]`).getAttribute('aria-pressed'),'true');assert.ok((await page.locator('#blueprint-caption').textContent()).length>50);}
  for(const detail of ['isolation','sensor','routing','maintenance']){await page.locator(`[data-detail=${detail}]`).click();assert.ok((await page.locator('#blueprint-detail').textContent()).length>70);}
  await page.click('#blueprint-play');assert.equal(await page.locator('.machine-shell').getAttribute('data-view'),'mechanism');
- await page.click('#restart-demo');assert.equal(await point(),0);assert.equal(await page.locator('#dash-deposits').textContent(),'0');assert.equal(await page.locator('#dash-session').textContent(),'Inactive');for(const material of ['pet','can','paper'])assert.equal(await page.locator('#level-'+material).textContent(),'45 %');
+ await open(page,'demo');await page.click('#restart-demo');assert.equal(await point(),0);assert.equal(await page.locator('#dash-deposits').textContent(),'0');assert.equal(await page.locator('#dash-session').textContent(),'Inactive');for(const material of ['pet','can','paper'])assert.equal(await page.locator('#level-'+material).textContent(),'45 %');
  await page.emulateMedia({reducedMotion:'reduce'});await page.click('#connect');await page.selectOption('#item','mix');await page.click('#scan');await settle(page);assert.equal(await point(),30);assert.equal(await page.locator('.scan-beam').evaluate(e=>getComputedStyle(e).animationName),'none');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);
- const touch=await browser.newContext({viewport:{width:360,height:800},hasTouch:true,isMobile:true,reducedMotion:'reduce'});const mobile=await touch.newPage();await mobile.goto(base);await mobile.locator('#connect').tap();await mobile.locator('[data-object=pet]').tap();await mobile.locator('#scan').tap();await settle(mobile);assert.equal(await mobile.locator('#points').textContent(),'10');await touch.close();
+ const touch=await browser.newContext({viewport:{width:360,height:800},hasTouch:true,isMobile:true,reducedMotion:'reduce'});const mobile=await touch.newPage();await mobile.goto(base);await open(mobile,'demo');await mobile.locator('#connect').tap();await mobile.locator('[data-object=pet]').tap();await mobile.locator('#scan').tap();await settle(mobile);assert.equal(await mobile.locator('#points').textContent(),'10');await touch.close();
 
  console.log('PASS V2: mouse drag/drop and touchscreen alternative, blocked session, credit after validation only, duplicate trigger, cancellation by logout/offline/full/reset, target-specific levels, keyboard/mobile, uncertain object, shared counters, 3 blueprint views/4 details, restart and reduced motion.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

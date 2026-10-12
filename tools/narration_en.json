@@ -1,0 +1,190 @@
+[
+  {
+    "start": 0,
+    "end": 8,
+    "title": "One opening. A new cycle.",
+    "sentences": [
+      {
+        "text": "A simple gesture. A new cycle.",
+        "translation_fr": "Un geste simple. Un nouveau cycle."
+      },
+      {
+        "text": "Meet EcoNova, a concept designed to make recycling feel effortless.",
+        "translation_fr": "Voici ÉcoNova, un concept conçu pour rendre le recyclage plus facile."
+      }
+    ]
+  },
+  {
+    "start": 8,
+    "end": 18,
+    "title": "Start a session",
+    "sentences": [
+      {
+        "text": "Scan the station’s code to begin.",
+        "translation_fr": "Scannez le code de la station pour commencer."
+      },
+      {
+        "text": "A future app would confirm your session on site,",
+        "translation_fr": "Une future application confirmerait votre session sur place,"
+      },
+      {
+        "text": "ready for a verified deposit.",
+        "translation_fr": "avant la validation du dépôt."
+      }
+    ]
+  },
+  {
+    "start": 18,
+    "end": 28,
+    "title": "One opening",
+    "sentences": [
+      {
+        "text": "Plastic bottles, cans, and accepted paper share one opening.",
+        "translation_fr": "Bouteilles en plastique, canettes et papiers acceptés partagent une seule ouverture."
+      },
+      {
+        "text": "Local collection rules guide every deposit:",
+        "translation_fr": "Les consignes locales guident chaque dépôt :"
+      },
+      {
+        "text": "no liquids or hazardous waste.",
+        "translation_fr": "aucun liquide ni déchet dangereux."
+      }
+    ]
+  },
+  {
+    "start": 28,
+    "end": 39,
+    "title": "Present one item at a time",
+    "sentences": [
+      {
+        "text": "Inside, a separator would present each object on its own,",
+        "translation_fr": "À l’intérieur, un séparateur présenterait les objets un par un,"
+      },
+      {
+        "text": "giving the sensors a clear view while checking for jams.",
+        "translation_fr": "pour dégager la vue des capteurs tout en surveillant les blocages."
+      }
+    ]
+  },
+  {
+    "start": 39,
+    "end": 50,
+    "title": "Observe and decide",
+    "sentences": [
+      {
+        "text": "Light, cameras, and additional sensors would help identify the material.",
+        "translation_fr": "Un éclairage, des caméras et d’autres capteurs aideraient à identifier la matière."
+      },
+      {
+        "text": "When confidence is low,",
+        "translation_fr": "En cas de doute,"
+      },
+      {
+        "text": "EcoNova would hold the item for review.",
+        "translation_fr": "ÉcoNova isolerait l’objet pour contrôle."
+      }
+    ]
+  },
+  {
+    "start": 50,
+    "end": 53,
+    "title": "Bottles · plate to the left",
+    "sentences": [
+      {
+        "text": "Plastic bottles slide to the left.",
+        "translation_fr": "Les bouteilles en plastique glissent à gauche."
+      }
+    ]
+  },
+  {
+    "start": 53,
+    "end": 56,
+    "title": "Cans · central hatch",
+    "sentences": [
+      {
+        "text": "Cans fall through the central hatch.",
+        "translation_fr": "Les canettes passent par la trappe centrale."
+      }
+    ]
+  },
+  {
+    "start": 56,
+    "end": 59,
+    "title": "Paper · plate to the right",
+    "sentences": [
+      {
+        "text": "Paper follows the plate to the right.",
+        "translation_fr": "La plaque dirige le papier à droite."
+      }
+    ]
+  },
+  {
+    "start": 59,
+    "end": 62,
+    "title": "Uncertain items · separate holding bay",
+    "sentences": [
+      {
+        "text": "Uncertain items enter a separate holding bay.",
+        "translation_fr": "Les objets incertains rejoignent un compartiment séparé."
+      }
+    ]
+  },
+  {
+    "start": 62,
+    "end": 72,
+    "title": "Verify before crediting",
+    "sentences": [
+      {
+        "text": "Only a verified deposit would add EcoPoints to your app.",
+        "translation_fr": "Seul un dépôt validé déclencherait des EcoPoints dans votre application."
+      },
+      {
+        "text": "One deposit, one credit;",
+        "translation_fr": "Un dépôt, un crédit ;"
+      },
+      {
+        "text": "this wallet is a demonstration.",
+        "translation_fr": "ce portefeuille est une démonstration."
+      }
+    ]
+  },
+  {
+    "start": 72,
+    "end": 83,
+    "title": "Maintain and measure",
+    "sentences": [
+      {
+        "text": "Separate compartments keep materials apart.",
+        "translation_fr": "Les compartiments maintiennent les matières séparées."
+      },
+      {
+        "text": "Accessible modules support cleaning and repair.",
+        "translation_fr": "Des modules accessibles facilitent le nettoyage et la réparation."
+      },
+      {
+        "text": "A pilot would measure sorting accuracy, energy, cost, and reliability.",
+        "translation_fr": "Un pilote mesurerait la précision du tri, l’énergie, les coûts et la fiabilité."
+      }
+    ]
+  },
+  {
+    "start": 83,
+    "end": 92,
+    "title": "From concept to prototype",
+    "sentences": [
+      {
+        "text": "Our mission: make recycling simpler,",
+        "translation_fr": "Notre mission : simplifier le recyclage,"
+      },
+      {
+        "text": "then prove the impact.",
+        "translation_fr": "puis démontrer l’impact."
+      },
+      {
+        "text": "Next comes a prototype, and results everyone can inspect.",
+        "translation_fr": "Prochaine étape : un prototype et des résultats vérifiables par tous."
+      }
+    ]
+  }
+]

@@ -1,6 +1,6 @@
-# ÉcoNova — Une entrée. Un nouveau cycle.
+# ÉcoNova — Transcription de la version française
 
-Film de concept original de 1 min 32 s. Mise en scène 3D de l’architecture envisagée, animation pédagogique et ambiance sonore originale. Voix française de synthèse locale, sous-titres français synchronisés et transcription ci-dessous. Aucune machine réelle ni installation existante ne sont montrées.
+Film de concept de 1 min 32 s. Voix française de synthèse Kokoro `ff_siwis`, narration continue par chapitre et sous-titres français fidèles. La version anglaise avec sous-titres français est aussi disponible ; voir [sa transcription bilingue](VIDEO_V2_EN_TRANSCRIPTION.md). Aucune machine réelle ni installation existante ne sont montrées.
 
 ## Ce que représente le film
 
@@ -12,78 +12,50 @@ Un QR public identifie une station mais ne prouve pas la présence de l’utilis
 
 ### 00:00:00 — Une entrée. Un nouveau cycle.
 
-Un seul geste. Un nouveau cycle.
-
-Imaginez ÉcoNova, la station qui veut rendre le recyclage évident.
+Un geste simple. Un nouveau cycle. Voici ÉcoNova, un concept conçu pour rendre le recyclage plus facile.
 
 ### 00:00:08 — Ouvrir une session
 
-Scannez le QR code de la station.
-
-Votre future application ouvrirait une session confirmée sur place.
-
-Le dépôt, lui, sera vérifié ensuite.
+Vous scannez le code de la station pour commencer. Votre application ouvrirait une session confirmée sur place, avant de vérifier chaque dépôt.
 
 ### 00:00:18 — Une seule ouverture
 
-Bouteille, canette : les recyclables acceptés entrent dans une seule ouverture.
-
-Les consignes s’adaptent aux filières locales.
-
-Sans liquides ni déchets dangereux.
+Bouteilles et canettes acceptées entreraient au même endroit. Vous suivez les consignes locales, sans liquides ni déchets dangereux.
 
 ### 00:00:28 — Séparer les objets
 
-À l’intérieur, les objets avanceraient un par un.
-
-Un séparateur doit gérer les mélanges, repérer les blocages et présenter chaque objet correctement.
+À l’intérieur, un séparateur présenterait chaque objet un par un, pour dégager la vue des capteurs tout en surveillant les blocages.
 
 ### 00:00:39 — Observer et décider
 
-Les capteurs observeraient l’objet dans une zone éclairée.
-
-Plusieurs mesures aideraient à identifier la matière.
-
-Un doute ? La station choisit le contrôle.
+Dans une zone éclairée, plusieurs mesures aideraient à reconnaître la matière. Si le résultat est incertain, la station choisit une voie de contrôle.
 
 ### 00:00:50 — Aiguiller les matières
 
-La plaque dirige le PET à gauche.
+Les bouteilles en plastique glissent à gauche.
 
-La trappe s’ouvre : l’aluminium descend au centre.
+Les canettes passent par la trappe centrale.
 
-À droite, la plaque dirige le papier.
+La plaque dirige le papier à droite.
 
-Un clapet séparé isole les objets incertains.
+Un bac séparé recueille les objets incertains.
 
 ### 00:01:02 — Confirmer avant de créditer
 
-Le passage confirmé déclencherait vos EcoPoints.
-
-Un dépôt, une validation.
-
-Les points rejoindraient votre portefeuille ; ici, ils restent fictifs.
+Seul un dépôt validé déclencherait des points dans votre application. Un dépôt, une validation ; ici, les points sont fictifs.
 
 ### 00:01:12 — Entretenir et mesurer
 
-Les matières se collecteraient séparément.
-
-Des modules accessibles faciliteraient le nettoyage et la réparation.
-
-Un pilote mesurera tri, énergie, coût et disponibilité.
+Les matières seraient collectées séparément. Des modules accessibles faciliteraient le nettoyage et la réparation. Un pilote mesurera tri, énergie, coût et disponibilité.
 
 ### 00:01:23 — De la vision au prototype
 
-ÉcoNova est un concept à prototyper.
-
-Notre mission : simplifier le tri, prouver l’impact.
-
-Prochain pas : un pilote, des résultats vérifiables.
+Notre mission : rendre le tri plus simple, puis en démontrer l’impact. Prochaine étape : un prototype et des résultats vérifiables par tous.
 
 ## Production et accessibilité
 
-Vidéo MP4 H.264 / audio AAC, 1280 × 720, 24 images/s. Le film est lancé volontairement par le visiteur, sans lecture automatique. La piste française est fournie séparément au format WebVTT. Les chapitres permettent d’accéder directement à un principe ; cette transcription constitue une alternative textuelle complète.
+Vidéo MP4 H.264 / audio AAC, 1280 × 720, 24 images/s. Les deux versions durent 1 min 32 s et utilisent exactement les mêmes images et les neuf mêmes chapitres. La lecture est volontaire, sans démarrage automatique. Les fichiers WebVTT et les transcriptions offrent une alternative textuelle.
 
-Les sources de production sont `tools/render_film_v2_scene.py` et `tools/render_film_v2.py`. Elles utilisent des outils hors ligne et ne créent aucune dépendance du site. Les images, animations et ambiance sonore de ce film sont des créations originales réalisées pour EcoScan.
+Les images, animations et ambiance musicale sont des créations originales pour EcoScan. Les textes français et anglais sont originaux. Les voix de synthèse sont produites localement avec Kokoro ; les sources, licences et commandes de régénération figurent dans [VOIX_OFF.md](VOIX_OFF.md). Chaque chapitre est synthétisé d’un bloc pour conserver l’intonation et les pauses naturelles. La musique baisse pendant les explications.
 
-La narration française est produite localement avec le modèle neural Kokoro, voix française SIWIS ; le texte est original et les sources et licences sont détaillées dans [VOIX_OFF.md](VOIX_OFF.md), avec un générateur hors ligne `tools/generate_voiceover.py`. La voix est mixée au premier plan ; la musique baisse pendant les explications.
+Sources de production : `tools/render_film_v2_scene.py`, `tools/render_film_v2.py`, `tools/generate_voiceover.py`, `tools/narration_fr.json` et `tools/narration_en.json`. Aucun moteur vocal ni modèle n’est téléchargé par les visiteurs.

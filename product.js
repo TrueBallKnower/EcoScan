@@ -100,14 +100,3 @@ document.addEventListener('ecoscan:phase',event=>{
   if(!['confirmed','rejected'].includes(event.detail.phase))document.getElementById('demo-result').hidden=true;
   if(['ready','disconnected','blocked-full','blocked-offline'].includes(event.detail.phase))preview.dataset.mechanismRoute='neutral';
 });
-const navTargets=[...document.querySelectorAll('#navigation a[href^="#"]')].map(link=>({link,target:document.querySelector(link.getAttribute('href'))})).filter(item=>item.target);
-let navigationScheduled=false;
-function updateNavigation() {
-  navigationScheduled=false;
-  let active=null,nearest=-Infinity;
-  navTargets.forEach(item=>{const top=item.target.getBoundingClientRect().top;if(top<=140&&top>nearest){active=item;nearest=top;}});
-  navTargets.forEach(item=>{item.link.classList.toggle('current-section',item===active);if(item===active)item.link.setAttribute('aria-current','location');else item.link.removeAttribute('aria-current');});
-  const back=document.getElementById('back-top');if(back)back.hidden=scrollY<1200;
-}
-addEventListener('scroll',()=>{if(!navigationScheduled){navigationScheduled=true;requestAnimationFrame(updateNavigation);}},{passive:true});
-addEventListener('resize',updateNavigation);updateNavigation();

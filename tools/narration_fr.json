@@ -4,8 +4,8 @@
     "end": 8,
     "title": "Une entrée. Un nouveau cycle.",
     "sentences": [
-      "Un seul geste. Un nouveau cycle.",
-      "Imaginez ÉcoNova, la station qui veut rendre le recyclage évident."
+      "Un geste simple. Un nouveau cycle.",
+      "Voici ÉcoNova, un concept conçu pour rendre le recyclage plus facile."
     ]
   },
   {
@@ -13,9 +13,9 @@
     "end": 18,
     "title": "Ouvrir une session",
     "sentences": [
-      "Scannez le QR code de la station.",
-      "Votre future application ouvrirait une session confirmée sur place.",
-      "Le dépôt, lui, sera vérifié ensuite."
+      "Vous scannez le code de la station pour commencer.",
+      "Votre application ouvrirait une session confirmée sur place,",
+      "avant de vérifier chaque dépôt."
     ]
   },
   {
@@ -23,9 +23,9 @@
     "end": 28,
     "title": "Une seule ouverture",
     "sentences": [
-      "Bouteille, canette : les recyclables acceptés entrent dans une seule ouverture.",
-      "Les consignes s’adaptent aux filières locales.",
-      "Sans liquides ni déchets dangereux."
+      "Bouteilles et canettes acceptées entreraient au même endroit.",
+      "Vous suivez les consignes locales,",
+      "sans liquides ni déchets dangereux."
     ]
   },
   {
@@ -33,8 +33,8 @@
     "end": 39,
     "title": "Séparer les objets",
     "sentences": [
-      "À l’intérieur, les objets avanceraient un par un.",
-      "Un séparateur doit gérer les mélanges, repérer les blocages et présenter chaque objet correctement."
+      "À l’intérieur, un séparateur présenterait chaque objet un par un,",
+      "pour dégager la vue des capteurs tout en surveillant les blocages."
     ]
   },
   {
@@ -42,28 +42,25 @@
     "end": 50,
     "title": "Observer et décider",
     "sentences": [
-      "Les capteurs observeraient l’objet dans une zone éclairée.",
-      "Plusieurs mesures aideraient à identifier la matière.",
-      "Un doute ? La station choisit le contrôle."
+      "Dans une zone éclairée, plusieurs mesures aideraient à reconnaître la matière.",
+      "Si le résultat est incertain,",
+      "la station choisit une voie de contrôle."
     ]
   },
   {
     "start": 50,
     "end": 53,
-    "title": "PET · plaque à gauche",
+    "title": "Bouteilles · plaque à gauche",
     "sentences": [
-      {
-        "text": "La plaque dirige le PET à gauche.",
-        "spoken": "La plaque dirige le pé, e, té à gauche."
-      }
+      "Les bouteilles en plastique glissent à gauche."
     ]
   },
   {
     "start": 53,
     "end": 56,
-    "title": "Aluminium · trappe centrale",
+    "title": "Canettes · trappe centrale",
     "sentences": [
-      "La trappe s’ouvre : l’aluminium descend au centre."
+      "Les canettes passent par la trappe centrale."
     ]
   },
   {
@@ -71,7 +68,7 @@
     "end": 59,
     "title": "Papier · plaque à droite",
     "sentences": [
-      "À droite, la plaque dirige le papier."
+      "La plaque dirige le papier à droite."
     ]
   },
   {
@@ -79,7 +76,7 @@
     "end": 62,
     "title": "Contrôle · clapet séparé",
     "sentences": [
-      "Un clapet séparé isole les objets incertains."
+      "Un bac séparé recueille les objets incertains."
     ]
   },
   {
@@ -87,9 +84,9 @@
     "end": 72,
     "title": "Confirmer avant de créditer",
     "sentences": [
-      "Le passage confirmé déclencherait vos EcoPoints.",
-      "Un dépôt, une validation.",
-      "Les points rejoindraient votre portefeuille ; ici, ils restent fictifs."
+      "Seul un dépôt validé déclencherait des points dans votre application.",
+      "Un dépôt, une validation ;",
+      "ici, les points sont fictifs."
     ]
   },
   {
@@ -97,7 +94,7 @@
     "end": 83,
     "title": "Entretenir et mesurer",
     "sentences": [
-      "Les matières se collecteraient séparément.",
+      "Les matières seraient collectées séparément.",
       "Des modules accessibles faciliteraient le nettoyage et la réparation.",
       "Un pilote mesurera tri, énergie, coût et disponibilité."
     ]
@@ -107,9 +104,9 @@
     "end": 92,
     "title": "De la vision au prototype",
     "sentences": [
-      "ÉcoNova est un concept à prototyper.",
-      "Notre mission : simplifier le tri, prouver l’impact.",
-      "Prochain pas : un pilote, des résultats vérifiables."
+      "Notre mission : rendre le tri plus simple,",
+      "puis en démontrer l’impact.",
+      "Prochaine étape : un prototype et des résultats vérifiables par tous."
     ]
   }
 ]

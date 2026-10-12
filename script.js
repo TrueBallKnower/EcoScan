@@ -24,13 +24,20 @@ const items = {
 let connected = false, deposited = false, busy = false, points = 0, deposits = 0;
 let transaction = 0;
 let earnedLastDeposit = 0;
+const exchangeRequests = new Map();
+const conceptProducts = Object.freeze({
+  'repair-pouch':{cost:20,label:'Pochette seconde vie'},
+  'loop-notebook':{cost:30,label:'Carnet Loop'},
+  'carry-bag':{cost:40,label:'Sac ReCycle'},
+  'repair-kit':{cost:60,label:'Kit Réparer'}
+});
 const levels = {pet:45,can:45,paper:45};
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 try { const saved = Number(localStorage.getItem('ecoscan-demo-points')); if(Number.isSafeInteger(saved) && saved >= 0 && saved <= 1000000) points = saved; }
 catch { $('storage-status').textContent = 'Stockage indisponible : les points restent disponibles pendant cette visite.'; }
 function routesFor(value) { return value === 'mix' ? ['pet','can','paper'] : ['cup','food'].includes(value) ? ['check'] : [value]; }
 function isFull(value = $('item').value) { return routesFor(value).some(route => levels[route] >= 100); }
-function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; updateGuide(); document.dispatchEvent(new CustomEvent('ecoscan:wallet',{detail:{points,deposits,earned:earnedLastDeposit,phase:$('drop-zone').dataset.state}})); }
+function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; updateGuide(); document.dispatchEvent(new CustomEvent('ecoscan:wallet',{detail:{points,deposits,earned:earnedLastDeposit,phase:$('drop-zone').dataset.state,connected,busy,offline:$('offline').checked}})); }
 function savePoints() {
   try {localStorage.setItem('ecoscan-demo-points',String(points));}
   catch { $('storage-status').textContent = 'Stockage indisponible : les points ne seront pas conservés après cette visite.'; }
@@ -160,6 +167,7 @@ document.addEventListener('dragstart',()=>{pointerDrag=null;});
 $('new-item').addEventListener('click',()=>{resetJourney();$('item').focus();});
 $('item').addEventListener('change',showItem);
 function resetDemo(all=false) {
+  exchangeRequests.clear();document.dispatchEvent(new CustomEvent('ecoscan:wallet-reset'));
   points=0;deposits=0;savePoints();resetJourney();$('redeem-status').textContent='';$('wallet-receipt').textContent='Portefeuille fictif remis à zéro.';
   if(all) {
     connected=false;$('connect').textContent='Simuler la connexion à ECO-001';$('session-status').textContent='Aucune session active.';
@@ -167,6 +175,34 @@ function resetDemo(all=false) {
   }
 }
 $('reset').addEventListener('click',()=>resetDemo());$('restart-demo').addEventListener('click',()=>resetDemo(true));
+// The app and concept catalogue request changes from this wallet; neither owns a balance.
+document.addEventListener('ecoscan:state-request',renderPoints);
+document.addEventListener('ecoscan:command',event=>{
+  const command=event.detail?.command;
+  if(command==='connect-station' && event.detail.stationId==='ECO-001' && !connected && !$('offline').checked)$('connect').click();
+  else if(command==='end-session' && connected)$('connect').click();
+  renderPoints();
+});
+document.addEventListener('ecoscan:exchange-request',event=>{
+  const request=event.detail||{},id=request.id;
+  if(typeof id!=='string'||!id||id.length>120)return;
+  if(exchangeRequests.has(id)){
+    document.dispatchEvent(new CustomEvent('ecoscan:exchange-result',{detail:{...exchangeRequests.get(id),points,duplicate:true}}));
+    return;
+  }
+  const product=Object.prototype.hasOwnProperty.call(conceptProducts,request.productId)?conceptProducts[request.productId]:null;
+  let result={id,productId:request.productId,ok:false,points};
+  if(!product || request.cost!==product.cost)result.message='Concept ou montant non reconnu. Aucun point retiré.';
+  else if(busy)result.message='Terminez le dépôt en cours avant de simuler un échange.';
+  else if(points<product.cost)result.message=`Solde insuffisant : ${product.cost} points fictifs nécessaires. Aucun point retiré.`;
+  else {
+    points-=product.cost;savePoints();
+    result={...result,ok:true,points,cost:product.cost,label:product.label,message:`Échange simulé : ${product.cost} points retirés pour ${product.label}. Aucun produit réservé ni commande créée.`};
+  }
+  exchangeRequests.set(id,result);
+  document.dispatchEvent(new CustomEvent('ecoscan:exchange-result',{detail:result}));
+});
+
 $('redeem').addEventListener('click',()=>{
   if(points<20){$('redeem-status').textContent='Solde insuffisant : il faut 20 points fictifs. Aucun point retiré.';return;}
   points-=20;savePoints();$('redeem-status').textContent='Échange simulé : 20 points retirés du solde local. Aucun bon ni cadeau réel créé.';
@@ -269,6 +305,8 @@ function updateCapacity() {
 
 // Manual video playback and chapter seeking; never auto-play on scroll.
 const explainer=$('explainer-video');
+let filmRequested=false;
+explainer.addEventListener('play',()=>{filmRequested=true;});
 let pendingVideoTime=null;
 function seekChapter() {
   if(pendingVideoTime===null || explainer.readyState<1 || !Number.isFinite(explainer.duration))return;
@@ -280,6 +318,7 @@ function seekChapter() {
 }
 ['loadedmetadata','loadeddata','progress','canplay','durationchange'].forEach(event=>explainer.addEventListener(event,seekChapter));
 document.querySelectorAll('[data-video-time]').forEach(button=>button.addEventListener('click',()=>{
+  filmRequested=true;
   pendingVideoTime=Number(button.dataset.videoTime);
   document.querySelectorAll('[data-video-time]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   $('video-status').textContent='Chargement du chapitre…';
@@ -287,6 +326,41 @@ document.querySelectorAll('[data-video-time]').forEach(button=>button.addEventLi
   if(explainer.readyState<1){explainer.preload='auto';explainer.load();}else seekChapter();
 }));
 explainer.addEventListener('error',()=>{$('video-status').textContent='La lecture est indisponible. Téléchargez la vidéo ou consultez la transcription.';});
+// Change the narration while preserving the position and the visitor's playback choice.
+const filmLanguages={
+  en:{source:'econova-film-v2-en.mp4',label:'Voix anglaise · sous-titres français.',tracks:[{source:'econova-film-v2-en-fr.vtt',language:'fr',label:'Français — traduction',kind:'subtitles'},{source:'econova-film-v2-en.vtt',language:'en',label:'English',kind:'captions'}]},
+  fr:{source:'econova-film-v2.mp4',label:'Voix française · sous-titres français.',tracks:[{source:'econova-film-v2-fr.vtt',language:'fr',label:'Français',kind:'captions'}]}
+};
+let filmLanguage='en',resumeAfterLanguageChange=false;
+function resumeSelectedFilm() {
+  if(!resumeAfterLanguageChange||pendingVideoTime!==null||explainer.readyState<2||explainer.closest('section').hidden)return;
+  resumeAfterLanguageChange=false;
+  explainer.play().catch(()=>{$('video-status').textContent='Narration changée. Appuyez sur lecture pour continuer.';});
+}
+['canplay','seeked'].forEach(event=>explainer.addEventListener(event,resumeSelectedFilm));
+document.addEventListener('ecoscan:viewchange',event=>{if(event.detail.group!=='discover')resumeAfterLanguageChange=false;});
+document.querySelectorAll('[data-film-language]').forEach(button=>button.addEventListener('click',()=>{
+  const language=button.dataset.filmLanguage,film=filmLanguages[language];
+  if(!film||language===filmLanguage)return;
+  const time=pendingVideoTime??(Number.isFinite(explainer.currentTime)?explainer.currentTime:0);
+  const started=filmRequested||explainer.preload!=='none'||!explainer.paused||time>0;
+  const showSubtitles=[...explainer.textTracks].some(track=>track.mode==='showing');
+  resumeAfterLanguageChange=!explainer.paused;
+  explainer.pause();filmLanguage=language;
+  explainer.querySelector('source').src='./assets/'+film.source+'?v=journeys-20261012';
+  explainer.querySelectorAll('track').forEach(track=>track.remove());
+  film.tracks.forEach((settings,index)=>{
+    const track=document.createElement('track');track.src='./assets/'+settings.source+'?v=journeys-20261012';
+    track.kind=settings.kind;track.srclang=settings.language;track.label=settings.label;track.default=index===0&&showSubtitles;explainer.append(track);
+  });
+  pendingVideoTime=started?time:null;explainer.preload=started?'auto':'none';explainer.load();
+  document.querySelectorAll('[data-film-language]').forEach(candidate=>candidate.setAttribute('aria-pressed',String(candidate===button)));
+  $('film-language-status').textContent=film.label+' La position dans le film est conservée.';
+  $('film-download').href='./assets/'+film.source+'?v=journeys-20261012';$('film-fallback-download').href=$('film-download').href;$('film-download').download='Econova-film-concept-'+language+'.mp4';
+  explainer.setAttribute('aria-label','Film de concept ÉcoNova : '+(language==='en'?'narration anglaise et sous-titres français':'narration française'));
+  if(!started)$('video-status').textContent='Narration sélectionnée. Appuyez sur lecture pour regarder le film.';
+}));
+
 let scrollScheduled=false;
 function updateReadingProgress() {
   scrollScheduled=false;

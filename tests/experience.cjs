@@ -6,6 +6,7 @@ const path=require('node:path');
 const base=process.env.ECOSCAN_TEST_URL||'http://127.0.0.1:8011/EcoScan';
 const output=process.env.ECOSCAN_SCREENSHOT_DIR||'/tmp/ecoscan-experience';
 const complete=page=>page.waitForFunction(()=>['confirmed','rejected'].includes(document.getElementById('drop-zone').dataset.state));
+async function open(page,id){await page.evaluate(value=>{location.hash=value;},id);await page.locator('#'+id).waitFor({state:'visible'});await page.waitForTimeout(220);}
 
 (async()=>{
   fs.mkdirSync(output,{recursive:true});
@@ -14,6 +15,13 @@ const complete=page=>page.waitForFunction(()=>['confirmed','rejected'].includes(
     const page=await browser.newPage({viewport:{width:1440,height:950}}),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(base);
+    assert.deepEqual(await page.locator('#navigation a').evaluateAll(links=>links.map(link=>link.getAttribute('href'))),['#accueil','#demo','#faisabilite','#mission','#ressources']);
+    for(const id of ['accueil','demo','faisabilite','mission','ressources']){
+      await open(page,id);
+      assert.equal(await page.locator(`#navigation a[href="#${id}"]`).getAttribute('aria-current'),'page');
+      assert.equal(await page.locator('#navigation a[aria-current="page"]').count(),1);
+    }
+    await open(page,'demo');
     await page.click('#reset');
     await page.click('#connect');
     await page.selectOption('#item','mix');
@@ -40,6 +48,18 @@ const complete=page=>page.waitForFunction(()=>['confirmed','rejected'].includes(
     assert.match(await page.locator('#demo-result-title').textContent(),/\+30 EcoPoints/);
     assert.match(await page.locator('#demo-result-detail').textContent(),/Solde local : 30/);
     assert.equal(await page.locator('#dash-points').textContent(),'30');
+    await open(page,'station');
+    assert.ok(await page.locator('#demo').isHidden());
+    assert.equal(await page.locator('#points').textContent(),'30');
+    await open(page,'phone-wallet');
+    assert.equal(await page.locator('#navigation a[href="#demo"]').getAttribute('aria-current'),'page');
+    assert.match(await page.locator('#session-status').textContent(),/active/);
+    assert.match(await page.locator('#demo-result-title').textContent(),/\+30 EcoPoints/);
+    await page.goBack();await page.locator('#station').waitFor({state:'visible'});
+    assert.ok(await page.locator('#demo').isHidden());
+    await page.goForward();await page.locator('#phone-wallet').waitFor({state:'visible'});
+    assert.equal(await page.locator('#points').textContent(),'30');
+    assert.match(await page.locator('#session-status').textContent(),/active/);
     await page.click('#new-item');
     assert.ok(await page.locator('#demo-result').isHidden());
     await page.selectOption('#item','cup');
@@ -71,10 +91,10 @@ const complete=page=>page.waitForFunction(()=>['confirmed','rejected'].includes(
     await mobile.locator('#menu-button').tap();
     assert.ok(await mobile.locator('#menu-button').evaluate(el=>el.getBoundingClientRect().height>=44));
     for(const link of await mobile.locator('#navigation a').all())assert.ok(await link.evaluate(el=>el.getBoundingClientRect().height>=44));
-    await mobile.locator('#navigation a[href="#video-explicative"]').tap();
-    await mobile.waitForFunction(()=>document.querySelector('#navigation a[href="#video-explicative"]').getAttribute('aria-current')==='location');
-    assert.ok(await mobile.locator('#back-top').isVisible());
+    await mobile.locator('#navigation a[href="#accueil"]').tap();
+    await mobile.waitForFunction(()=>document.querySelector('#navigation a[href="#accueil"]').getAttribute('aria-current')==='page');
     assert.equal(await mobile.locator('#menu-button').getAttribute('aria-expanded'),'false');
+    await open(mobile,'video-explicative');
     await mobile.locator('[data-video-time="50"]').tap();
     await mobile.waitForFunction(()=>Math.abs(document.getElementById('explainer-video').currentTime-50)<.2);
     assert.ok(await mobile.locator('#explainer-video').evaluate(video=>video.paused&&!video.autoplay));
@@ -85,6 +105,7 @@ const complete=page=>page.waitForFunction(()=>['confirmed','rejected'].includes(
     assert.equal(await mobile.locator('.preview-object').evaluate(el=>getComputedStyle(el).animationName),'none');
     assert.equal(await mobile.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior),'auto');
 
+    await open(mobile,'station');
     for(const view of ['exterior','cutaway','mechanism']) {
       await mobile.locator(`button[data-view="${view}"]`).tap();
       const img=mobile.locator(`[data-model-view="${view}"]`);
