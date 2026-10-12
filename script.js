@@ -29,7 +29,7 @@ try { const saved = Number(localStorage.getItem('ecoscan-demo-points')); if(Numb
 catch { $('storage-status').textContent = 'Stockage indisponible : les points restent disponibles pendant cette visite.'; }
 function routesFor(value) { return value === 'mix' ? ['pet','can','paper'] : ['cup','food'].includes(value) ? ['check'] : [value]; }
 function isFull(value = $('item').value) { return routesFor(value).some(route => levels[route] >= 100); }
-function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; }
+function renderPoints() { $('points').textContent = points; $('dash-points').textContent = points; updateGuide(); }
 function savePoints() {
   try {localStorage.setItem('ecoscan-demo-points',String(points));}
   catch { $('storage-status').textContent = 'Stockage indisponible : les points ne seront pas conservés après cette visite.'; }
@@ -52,6 +52,7 @@ function updateAvailability() {
   $('dash-network').textContent=offline?'Hors ligne simulé':'En ligne fictif';
   $('dash-deposits').textContent=deposits;
   renderPoints();
+  updateGuide();
   if(busy) return;
   if(deposited) { $('scan-status').textContent='Dépôt simulé traité. Préparez un nouveau dépôt pour continuer.'; return; }
   const phase=offline?'blocked-offline':!connected?'disconnected':full?'blocked-full':'ready';
@@ -233,3 +234,26 @@ $('blueprint-play').addEventListener('click',()=>{
   $('blueprint-caption').textContent='Trajet conceptuel : dépôt commun → isolement → scan → aiguillage → bac ou contrôle. Aucun mécanisme réel.';
   blueprintTimer=setTimeout(()=>shell.classList.remove('trace-path'),reducedMotion()?50:2400);
 });
+
+// Guided entry mirrors the same station state, never a second wallet.
+function updateGuide() {
+  const offline=$('offline').checked,full=isFull();
+  $('guided-action').disabled=busy||offline||(connected&&!deposited&&full);
+  $('guided-action').textContent=busy?'Traitement simulé en cours…':!connected?'1. Connecter la station de démo':deposited?'Essayer un nouveau dépôt':'2. Déposer l’objet sélectionné';
+  $('guided-status').textContent=offline?'Réseau simulé coupé : rétablissez-le dans le tableau de bord.':busy?'La station simule l’analyse et le tri. Les points arrivent seulement après validation.':!connected?'Une connexion fictive suffit pour commencer ; aucun compte n’est créé.':full&&!deposited?'Un bac requis est plein. Ajustez son niveau dans le tableau de bord.':deposited?($('drop-zone').dataset.state==='rejected'?`Objet à contrôler : aucun crédit. Solde local : ${points} EcoPoints fictifs.`:`Dépôt simulé validé. Votre portefeuille contient ${points} EcoPoints fictifs. Vous pouvez essayer un autre objet ou simuler un échange.`):'Sélectionnez un objet ou conservez le mélange proposé. Vous n’avez aucun bac à choisir.';
+}
+$('guided-action').addEventListener('click',()=>{
+  if(busy||$('offline').checked)return;
+  if(!connected){$('connect').click();$('demo').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});}
+  else if(deposited){resetJourney();$('item').focus();}
+  else {startDeposit();$('drop-zone').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'center'});}
+});
+const stationFromURL=new URLSearchParams(location.search).get('station');
+if(stationFromURL){$('qr-arrival').textContent=stationFromURL==='ECO-001'?'QR reconnu : station fictive ECO-001. Confirmez la connexion pour lancer la démo.':'Identifiant de station inconnu. Aucun appareil connecté ; utilisez la démo ECO-001.';}
+function updateCapacity() {
+  const arrival=Number($('arrival-rate').value),cycle=Number($('cycle-time').value),available=Number($('availability').value),capacity=60/cycle*available/100;
+  $('arrival-value').textContent=`${arrival} objets/min`;$('cycle-value').textContent=`${cycle} s/objet`;$('availability-value').textContent=`${available} %`;
+  $('capacity-value').textContent=capacity.toLocaleString('fr-CH',{maximumFractionDigits:1});
+  $('capacity-status').textContent=arrival>capacity?`Dans ce scénario fictif, ${arrival} objets/min dépasse la capacité calculée. Une file pourrait se former ; au moins ${Math.ceil(arrival/capacity)} stations seraient nécessaires dans ce modèle simplifié, avant prise en compte des pics et contraintes réelles.`:`Dans ce scénario fictif, le flux moyen reste sous la capacité calculée. Cela ne garantit pas l’absence de file : variabilité, maintenance et mélanges ne sont pas modélisés.`;
+}
+['arrival-rate','cycle-time','availability'].forEach(id=>$(id).addEventListener('input',updateCapacity));updateCapacity();updateGuide();

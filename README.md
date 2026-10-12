@@ -116,3 +116,15 @@ node tests/upgrade.cjs
 ```
 
 Pour tester le sous-chemin de publication, servir le parent du dépôt puis utiliser `ECOSCAN_TEST_URL=http://127.0.0.1:8010/EcoScan` devant chaque commande. La suite V2 vérifie aussi un glisser-déposer réel, le parcours avec écran tactile émulé, les interruptions pendant l’animation, le crédit unique, les remplissages distincts et les commandes du blueprint. Playwright/Chromium servent uniquement aux tests, sans dépendance ajoutée au site.
+
+## Vision, QR et faisabilité — V3
+
+Les sections `#vision-monde`, `#qr-session`, `#architecture`, `#faisabilite`, `#campus-pilote` et `#objectifs-mondiaux` explicitent le projet. Les références UNIL et ODD/ONU sont thématiques, sans partenariat officiel. Le dossier `docs/FAISABILITE.md` rassemble les limites techniques, les questions de sécurité, le protocole QR envisagé et les étapes avant un pilote.
+
+Le QR local `assets/ecoscan-station-qr.svg` ouvre réellement `https://trueballknower.github.io/EcoScan/?station=ECO-001#demo`. La page confirme l’identifiant fictif mais ne connecte pas automatiquement une session. Aucun portefeuille entre appareils, caméra, authentification ou machine réelle. Un code copié ne constitue pas une preuve de présence.
+
+Pour changer l’adresse du QR, modifier `URL` dans `tools/generate_qr.py` et régénérer le SVG avec le paquet Python optionnel `qrcode==8.2`. Le paquet est uniquement un outil de génération hors ligne : aucune dépendance ajoutée au site ou au déploiement.
+
+La simulation propose maintenant une entrée guidée avec un seul bouton qui reflète l’état partagé de la station. Le calculateur de faisabilité compare des hypothèses de flux et de cycle complet ; sa formule et ses limites sont visibles. Ses chiffres ne sont jamais des performances mesurées ni des économies de CO₂.
+
+Vérification supplémentaire : `node tests/vision.cjs`, avec `ECOSCAN_TEST_URL` pour choisir l’adresse du serveur comme pour les autres suites. Les tests de navigateur vérifient le parcours guidé, les hypothèses de capacité et l’arrivée par l’URL QR.
